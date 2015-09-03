@@ -277,101 +277,102 @@ namespace mp4_parse_test1
 
 				var result =
 					from node in nodes
-					from child2 in node.Children
-					where child2.Type == BoxType.Trak
-					from child3 in child2.Children
-					where child3.Type == BoxType.Mdia
-					from child4 in child3.Children
-					where child4.Type == BoxType.Hdlr
-					select new
-					{
-						HandlerType = fs.Seek(child4.Offset + 16, SeekOrigin.Begin) != 0 ? StringUtils.FromBinary(br.ReadUInt32()) : "error!"
-					};
+						from child2 in node.Children
+						where child2.Type == BoxType.Trak
+							from child3 in child2.Children
+							where child3.Type == BoxType.Mdia
+								from child4 in child3.Children
+								where child4.Type == BoxType.Hdlr
+								select new
+								{
+									HandlerType = fs.Seek(child4.Offset + 16, SeekOrigin.Begin) != 0 ? StringUtils.FromBinary(br.ReadUInt32()) : "error!"
+								};
 
 				result.ToList().ForEach(Console.WriteLine);
 
 				var audio =
 					from node in nodes
-					from box1 in node.Children
-					where box1.Type == BoxType.Trak
-					select box1 into trak
-					from box2 in trak.Children
-					where box2.Type == BoxType.Mdia
-					select new
-					{
-						Box = box2,
-						HandlerType =
-							(from box3 in box2.Children
-							 where box3.Type == BoxType.Hdlr
-							 select fs.Seek(box3.Offset + 16, SeekOrigin.Begin) != 0 ? StringUtils.FromBinary(br.ReadUInt32()) : "error!"
-							).FirstOrDefault()
-					} into mdia_type
-					where mdia_type.HandlerType == "soun"
-					from box4 in mdia_type.Box.Children
-					where box4.Type == BoxType.Minf
-					select box4 into minf
-					from box5 in minf.Children
-					where box5.Type == BoxType.Stbl
-					select new
-					{
-						StblBox = box5,
-						Mp4aBoxInfo =
-							(from box6 in box5.Children
-							 where box6.Type == BoxType.Stsd
-							 select box6 into stsd
-							 from box7 in stsd.Children
-							 where box7.Type == BoxType.Mp4a
-							 select box7 into mp4a
-							 from box8 in mp4a.Children
-							 where box8.Type == BoxType.Esds
-							 select new
-							 {
-								 DecoderConfigDescriptor = new
-								 {
-									 Channels = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-									 BitPerSample = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-									 SampleRate = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt32()) : "error!",
-									 ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}", br.ReadByte()) : "error!",
-									 MaxBitRate = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!",
-									 AvgBitRate = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!"
-								 }
-							 }).FirstOrDefault(),
-						DecodingTimeToSampleBoxInfo =
-							(from box6 in box5.Children
-							 where box6.Type == BoxType.Stts
-							 select new
-							 {
-								 Dummy = fs.Seek(box6.Offset, SeekOrigin.Begin),
-								 Dummy2 = fs.Seek(box6.Offset + 8 + 4, SeekOrigin.Begin),
-								 Entries =
-														 from ent in Enumerable.Range(0, (int)br.ReadUInt32())
+						from box1 in node.Children
+						where box1.Type == BoxType.Trak
+						select box1 into trak
+							from box2 in trak.Children
+							where box2.Type == BoxType.Mdia
+							select new
+							{
+								Box = box2,
+								HandlerType =
+									(from box3 in box2.Children
+									 where box3.Type == BoxType.Hdlr
+									 select fs.Seek(box3.Offset + 16, SeekOrigin.Begin) != 0 ? StringUtils.FromBinary(br.ReadUInt32()) : "error!"
+									).FirstOrDefault()
+							} into mdia_type
+							where mdia_type.HandlerType == "soun"
+								from box4 in mdia_type.Box.Children
+								where box4.Type == BoxType.Minf
+								select box4 into minf
+									from box5 in minf.Children
+									where box5.Type == BoxType.Stbl
 									select new
 									{
-										_Index = ent,
-										SampleCount = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-										SampleDelta = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-									}
-							 }).FirstOrDefault(),
-						SampleToChunkBoxInfo =
-							(from box6 in box5.Children
-							 where box6.Type == BoxType.Stsc
-							 select new
-							 {
-								 Dummy = fs.Seek(box6.Offset, SeekOrigin.Begin),
-								 Dummy2 = fs.Seek(box6.Offset + 8 + 4, SeekOrigin.Begin),
-								 Entries =
-														 from ent in Enumerable.Range(0, (int)br.ReadUInt32())
-									select new
-									{
-										_Index = ent,
-										FirstChunk = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-										SamplePerChunk = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-										SampleDescriptionIndex = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 8), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-															//FirstChunk = br.ReadUInt32(), // 何故か上のと絡むと、相対位置からの移動が狂う。。。
-															//SamplePerChunk = br.ReadUInt32(),
-															//SampleDescriptionIndex = br.ReadUInt32(),
+										StblBox = box5,
+										Mp4aBoxInfo =
+											(from box6 in box5.Children
+											 where box6.Type == BoxType.Stsd
+											 select box6 into stsd
+												from box7 in stsd.Children
+												where box7.Type == BoxType.Mp4a
+												select box7 into mp4a
+													from box8 in mp4a.Children
+													where box8.Type == BoxType.Esds
+													select new
+													{
+														DecoderConfigDescriptor = new
+														{
+															Channels = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
+															BitPerSample = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
+															SampleRate = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt32()) : "error!",
+															ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}", br.ReadByte()) : "error!",
+															MaxBitRate = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!",
+															AvgBitRate = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!"
 														}
-							 }).FirstOrDefault()
+													}
+											).FirstOrDefault(),
+										DecodingTimeToSampleBoxInfo =
+											(from box6 in box5.Children
+											 where box6.Type == BoxType.Stts
+											 select new
+											 {
+												Dummy = fs.Seek(box6.Offset, SeekOrigin.Begin),
+												Dummy2 = fs.Seek(box6.Offset + 8 + 4, SeekOrigin.Begin),
+												Entries =
+													from ent in Enumerable.Range(0, (int)br.ReadUInt32())
+													select new
+													{
+														_Index = ent+1,
+														SampleCount = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
+														SampleDelta = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
+													}
+											 }).FirstOrDefault(),
+										SampleToChunkBoxInfo =
+											(from box6 in box5.Children
+											 where box6.Type == BoxType.Stsc
+											 select new
+											 {
+												Dummy = fs.Seek(box6.Offset, SeekOrigin.Begin),
+												Dummy2 = fs.Seek(box6.Offset + 8 + 4, SeekOrigin.Begin),
+												Entries =
+													from ent in Enumerable.Range(0, (int)br.ReadUInt32())
+													select new
+													{
+														_Index = ent+1,
+														FirstChunk = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
+														SamplePerChunk = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
+														SampleDescriptionIndex = fs.Seek(box6.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 8), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
+														//FirstChunk = br.ReadUInt32(), // 何故か上のと絡むと、相対位置からの移動が狂う。。。
+														//SamplePerChunk = br.ReadUInt32(),
+														//SampleDescriptionIndex = br.ReadUInt32(),
+													}
+											 }).FirstOrDefault()
 					};
 
 				foreach (var item in audio)
@@ -529,132 +530,6 @@ namespace mp4_parse_test1
 					}
 				}
 			}
-		}
-	}
-
-	public enum BoxType : uint
-	{
-		Unknown = uint.MaxValue,
-		Ftyp = ('f' << 24) | ('t' << 16) | ('y' << 8) | ('p' << 0),
-		Moov = ('m' << 24) | ('o' << 16) | ('o' << 8) | ('v' << 0),
-		Mvhd = ('m' << 24) | ('v' << 16) | ('h' << 8) | ('d' << 0),
-		Iods = ('i' << 24) | ('o' << 16) | ('d' << 8) | ('s' << 0),
-		Trak = ('t' << 24) | ('r' << 16) | ('a' << 8) | ('k' << 0),
-		Tkhd = ('t' << 24) | ('k' << 16) | ('h' << 8) | ('d' << 0),
-		Mdia = ('m' << 24) | ('d' << 16) | ('i' << 8) | ('a' << 0),
-		Mdhd = ('m' << 24) | ('d' << 16) | ('h' << 8) | ('d' << 0),
-		Hdlr = ('h' << 24) | ('d' << 16) | ('l' << 8) | ('r' << 0),
-		Minf = ('m' << 24) | ('i' << 16) | ('n' << 8) | ('f' << 0),
-		Vmhd = ('v' << 24) | ('m' << 16) | ('h' << 8) | ('d' << 0),
-		Dinf = ('d' << 24) | ('i' << 16) | ('n' << 8) | ('f' << 0),
-		Dref = ('d' << 24) | ('r' << 16) | ('e' << 8) | ('f' << 0),
-		Url  = ('u' << 24) | ('r' << 16) | ('l' << 8) | (' ' << 0),
-		Stbl = ('s' << 24) | ('t' << 16) | ('b' << 8) | ('l' << 0),
-		Smhd = ('s' << 24) | ('m' << 16) | ('h' << 8) | ('d' << 0),
-		Stsd = ('s' << 24) | ('t' << 16) | ('s' << 8) | ('d' << 0),
-		Avc1 = ('a' << 24) | ('v' << 16) | ('c' << 8) | ('1' << 0),
-		AvcC = ('a' << 24) | ('v' << 16) | ('c' << 8) | ('C' << 0),
-		Btrt = ('b' << 24) | ('t' << 16) | ('r' << 8) | ('t' << 0),
-		Mp4a = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('a' << 0),
-		Esds = ('e' << 24) | ('s' << 16) | ('d' << 8) | ('s' << 0),
-		Stts = ('s' << 24) | ('t' << 16) | ('t' << 8) | ('s' << 0),
-		Stss = ('s' << 24) | ('t' << 16) | ('s' << 8) | ('s' << 0),
-		Stsc = ('s' << 24) | ('t' << 16) | ('s' << 8) | ('c' << 0),
-		Stsz = ('s' << 24) | ('t' << 16) | ('s' << 8) | ('z' << 0),
-		Stco = ('s' << 24) | ('t' << 16) | ('c' << 8) | ('o' << 0),
-		Udta = ('u' << 24) | ('d' << 16) | ('t' << 8) | ('a' << 0),
-		Cprt = ('c' << 24) | ('p' << 16) | ('r' << 8) | ('t' << 0),
-		Mdat = ('m' << 24) | ('d' << 16) | ('a' << 8) | ('t' << 0),
-		Free = ('f' << 24) | ('r' << 16) | ('e' << 8) | ('e' << 0),
-	}
-
-	public class Box
-	{
-		public UInt32 Size { get; set; }
-		public BoxType Type { get; set; }
-
-		public Box(BoxType type)
-		{
-			Type = type;
-		}
-
-		public string GetName()
-		{
-			return StringUtils.FromBinary((UInt32)Type);
-		}
-	}
-
-	public class FullBox : Box
-	{
-		public byte Version { get; set; }
-		public UInt32 Flags { get; set; }
-
-		public FullBox(BoxType type, byte version, UInt32 flags) : base(type)
-		{
-			Version = version;
-			Flags = flags;
-		}
-	}
-
-	public class FileTypeBox : Box
-	{
-		public UInt32 MajorBrand { get; set; }
-		public UInt32 MinorVersion { get; set; }
-		public UInt32 CompatibleBrands { get; set; }
-
-		public FileTypeBox() : base(BoxType.Ftyp)
-		{
-		}
-	}
-
-	public class MoovBox : Box
-	{
-		public MoovBox() : base(BoxType.Moov)
-		{
-		}
-	}
-
-	public class MvhdBox : FullBox
-	{
-		public DateTime CreationTime { get; set; }
-		public DateTime ModificationTime { get; set; }
-		public UInt32 TimeScale { get; set; }
-		public UInt64 Duration { get; set; }
-		public Double Rate { get; set; }
-		public Single Volume { get; set; }
-		public UInt32 NextTrackId { get; set; }
-
-		public MvhdBox(byte version, UInt32 flags) : base(BoxType.Mvhd, version, flags)
-		{
-		}
-	}
-
-	public class TrakBox : Box
-	{
-		public TrakBox() : base(BoxType.Trak)
-		{
-		}
-	}
-
-	public class TkhdBox : FullBox
-	{
-		public TkhdBox(byte version, UInt32 flags) : base(BoxType.Tkhd, version, flags)
-		{
-		}
-	}
-
-	public static class StringUtils
-	{
-		public static string FromBinary(UInt32 binary)
-		{
-			char[] chars =
-				new[] {
-					(char)((binary & 0xff000000) >> 24),
-					(char)((binary & 0x00ff0000) >> 16),
-					(char)((binary & 0x0000ff00) >>  8),
-					(char)((binary & 0x000000ff) >>  0),
-				};
-			return new string(chars);
 		}
 	}
 }
