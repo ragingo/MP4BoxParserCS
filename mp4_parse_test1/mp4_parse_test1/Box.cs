@@ -46,6 +46,9 @@ namespace mp4_parse_test1
 	{
 		public const string Sound = "soun";
 		public const string Video = "vide";
+		public const string Hint = "hint";
+		public const string Metadata = "meta";
+		public const string AuxiliaryVideo = "auxv";
 	}
 
 	class BoxNode
@@ -104,6 +107,16 @@ namespace mp4_parse_test1
 		public UInt32 NextTrackId { get; set; }
 
 		public MvhdBoxNode()
+		{
+		}
+	}
+
+	class HdlrBoxNode : FullBoxNode
+	{
+		public string HandlerType { get; set; }
+		public string Name { get; set; }
+
+		public HdlrBoxNode()
 		{
 		}
 	}

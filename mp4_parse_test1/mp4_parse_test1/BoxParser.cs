@@ -28,7 +28,6 @@ namespace mp4_parse_test1
 				sibling.Size = boxSize;
 				sibling.Type = boxType;
 				sibling.Parent = parent;
-				nodes.Add(sibling);
 
 				switch (boxType)
 				{
@@ -39,24 +38,34 @@ namespace mp4_parse_test1
 				case BoxType.Dinf:
 				case BoxType.Stbl:
 				case BoxType.Udta:
+					nodes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
 					break;
 				case BoxType.Mvhd:
-					ParseMvhd(reader, sibling);
+					nodes.Add(ParseMvhd(reader, sibling));
+					break;
+				case BoxType.Hdlr:
+					nodes.Add(ParseHdlr(reader, sibling));
+					//reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
 				case BoxType.Dref:
+					nodes.Add(sibling);
 					ParseDref(reader, sibling);
 					break;
 				case BoxType.Stsd:
+					nodes.Add(sibling);
 					ParseStsd(reader, sibling);
 					break;
 				case BoxType.Avc1:
+					nodes.Add(sibling);
 					ParseAvc1(reader, sibling);
 					break;
 				case BoxType.Mp4a:
+					nodes.Add(sibling);
 					ParseMp4a(reader, sibling);
 					break;
 				default:
+					nodes.Add(sibling);
 					reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
 				}
@@ -72,7 +81,7 @@ namespace mp4_parse_test1
 		}
 
 		// Movie Header Box
-		private void ParseMvhd(BinaryReader2 reader, BoxNode sibling)
+		private BoxNode ParseMvhd(BinaryReader2 reader, BoxNode sibling)
 		{
 			var newSibling = sibling.As<MvhdBoxNode>();
 			newSibling.Version = reader.ReadByte();
@@ -98,6 +107,29 @@ namespace mp4_parse_test1
 			reader.ReadBytes(4 * 9); // matrix: template int(32) [9]
 			reader.ReadBytes(4 * 6); // pre_defined: bit(32) [6]
 			newSibling.NextTrackId = reader.ReadUInt32();
+
+			return newSibling;
+		}
+
+		// Handler Reference Box
+		private BoxNode ParseHdlr(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<HdlrBoxNode>();
+			newSibling.Version = reader.ReadByte();
+			newSibling.Flags = reader.ReadUInt24();
+			reader.ReadUInt32(); // pre_defined: usigned int(32)
+			newSibling.HandlerType = StringUtils.FromBinary(reader.ReadUInt32());
+			reader.ReadBytes(4 * 3); // reserved: const unsigned int(32) [3]
+
+			StringBuilder sb = new StringBuilder();
+			char c;
+			while((c = reader.ReadChar()) != '\0')
+			{
+				sb.Append(c);
+			}
+			newSibling.Name = sb.ToString();
+
+			return newSibling;
 		}
 
 		// Data Reference Box
