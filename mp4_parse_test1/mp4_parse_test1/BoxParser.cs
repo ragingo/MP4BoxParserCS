@@ -41,6 +41,10 @@ namespace mp4_parse_test1
 					nodes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
 					break;
+				//case BoxType.Moov:
+				//	nodes.Add(ParseMoov(reader, sibling));
+				//	sibling.Children.AddRange(GetBoxes(reader, nodes.Last())); // TODO: うまくいかない
+				//	break;
 				case BoxType.Mvhd:
 					nodes.Add(ParseMvhd(reader, sibling));
 					break;
@@ -78,6 +82,12 @@ namespace mp4_parse_test1
 			}
 
 			return nodes;
+		}
+
+		private BoxNode ParseMoov(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<MoovBoxNode>();
+			return newSibling;
 		}
 
 		// Movie Header Box

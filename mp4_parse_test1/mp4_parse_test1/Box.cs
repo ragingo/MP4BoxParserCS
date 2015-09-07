@@ -96,6 +96,13 @@ namespace mp4_parse_test1
 		}
 	}
 
+	class MoovBoxNode : BoxNode
+	{
+		public MoovBoxNode()
+		{
+		}
+	}
+
 	class MvhdBoxNode : FullBoxNode
 	{
 		public DateTime CreationTime { get; set; }
