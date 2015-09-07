@@ -74,12 +74,12 @@ namespace mp4_parse_test1
 					// esds box
 					DecoderConfigDescriptor = new
 					{
-						Channels             = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-						BitPerSample         = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-						SampleRate           = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt32()) : "error!",
+						Channels             = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt16()) : "error!",
+						BitPerSample         = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt16()) : "error!",
+						SampleRate           = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt32()) : "error!",
 						ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}",   br.ReadByte())   : "error!",
-						MaxBitRate           = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32())  : "error!",
-						AvgBitRate           = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32())  : "error!"
+						MaxBitRate           = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadInt32())  : "error!",
+						AvgBitRate           = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadInt32())  : "error!"
 					}
 				}
 

@@ -295,7 +295,7 @@ namespace mp4_parse_test1
 		{
 			StringBuilder sb = new StringBuilder();
 			sb.Append(StringUtils.FromBinary((uint)Type));
-			sb.AppendFormat(" {{ offset:{0:#,#}, size:{1:#,#} }}", Offset, Size);
+			sb.AppendFormat(" {{ offset:{0:#,0}, size:{1:#,0} }}", Offset, Size);
 			return sb.ToString();
 		}
 
