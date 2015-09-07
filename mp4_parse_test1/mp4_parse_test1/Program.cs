@@ -71,6 +71,7 @@ namespace mp4_parse_test1
 
 				let Mp4aBoxInfo = new
 				{
+					// esds box
 					DecoderConfigDescriptor = new
 					{
 						Channels             = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",

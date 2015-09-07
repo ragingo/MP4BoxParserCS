@@ -190,4 +190,14 @@ namespace mp4_parse_test1
 			SampleSize = 16;
 		}
 	}
+
+	// http://xhelmboyx.tripod.com/formats/mp4-layout.txt
+	// TODO: esds box. 複数のタグが管理されるみたい・・・どう扱うのか・・・
+	class ESDescriptorBoxNode : FullBoxNode
+	{
+		public byte Tag { get; set; }
+		public byte TagSize { get; set; }
+		public UInt16 ESID { get; set; }
+		public byte StreamPriority { get; set; }
+	}
 }
