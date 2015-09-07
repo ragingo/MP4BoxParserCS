@@ -31,13 +31,13 @@ namespace mp4_parse_test1
 
 				switch (boxType)
 				{
-				case BoxType.Moov:
-				case BoxType.Trak:
-				case BoxType.Mdia:
-				case BoxType.Minf:
-				case BoxType.Dinf:
-				case BoxType.Stbl:
-				case BoxType.Udta:
+				case BoxType.moov:
+				case BoxType.trak:
+				case BoxType.mdia:
+				case BoxType.minf:
+				case BoxType.dinf:
+				case BoxType.stbl:
+				case BoxType.udta:
 					nodes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
 					break;
@@ -45,26 +45,25 @@ namespace mp4_parse_test1
 				//	nodes.Add(ParseMoov(reader, sibling));
 				//	sibling.Children.AddRange(GetBoxes(reader, nodes.Last())); // TODO: うまくいかない
 				//	break;
-				case BoxType.Mvhd:
+				case BoxType.mvhd:
 					nodes.Add(ParseMvhd(reader, sibling));
 					break;
-				case BoxType.Hdlr:
+				case BoxType.hdlr:
 					nodes.Add(ParseHdlr(reader, sibling));
-					//reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
-				case BoxType.Dref:
+				case BoxType.dref:
 					nodes.Add(sibling);
 					ParseDref(reader, sibling);
 					break;
-				case BoxType.Stsd:
+				case BoxType.stsd:
 					nodes.Add(sibling);
 					ParseStsd(reader, sibling);
 					break;
-				case BoxType.Avc1:
+				case BoxType.avc1:
 					nodes.Add(sibling);
 					ParseAvc1(reader, sibling);
 					break;
-				case BoxType.Mp4a:
+				case BoxType.mp4a:
 					nodes.Add(sibling);
 					ParseMp4a(reader, sibling);
 					break;

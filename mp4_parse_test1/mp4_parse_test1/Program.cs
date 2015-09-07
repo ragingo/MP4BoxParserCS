@@ -24,8 +24,8 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			//const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
-			const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
+			const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
+			//const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
@@ -43,10 +43,10 @@ namespace mp4_parse_test1
 		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<BoxNode> nodes)
 		{
 			var result =
-				from box1 in nodes.First(box => box.Type == BoxType.Moov).Children
-				where box1.Type == BoxType.Trak
-				let mdia = box1.Children.First(box => box.Type == BoxType.Mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.Hdlr) as HdlrBoxNode
+				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
+				where box1.Type == BoxType.trak
+				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
+				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBoxNode
 				where hdlr.HandlerType == HandlerTypes.Sound || 
 					  hdlr.HandlerType == HandlerTypes.Video
 				select hdlr;
@@ -57,17 +57,17 @@ namespace mp4_parse_test1
 		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<BoxNode> nodes)
 		{
 			var audio =
-				from box1 in nodes.First(box => box.Type == BoxType.Moov).Children
-				where box1.Type == BoxType.Trak
-				let mdia = box1.Children.First(box => box.Type == BoxType.Mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.Hdlr) as HdlrBoxNode
+				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
+				where box1.Type == BoxType.trak
+				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
+				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBoxNode
 				where hdlr.HandlerType == HandlerTypes.Sound
 
-				let minf = mdia.Children.First(box => box.Type == BoxType.Minf)
-				let stbl = minf.Children.First(box => box.Type == BoxType.Stbl)
-				let stsd = stbl.Children.First(box => box.Type == BoxType.Stsd)
-				let mp4a = stsd.Children.First(box => box.Type == BoxType.Mp4a)
-				let esds = mp4a.Children.First(box => box.Type == BoxType.Esds)
+				let minf = mdia.Children.First(box => box.Type == BoxType.minf)
+				let stbl = minf.Children.First(box => box.Type == BoxType.stbl)
+				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd)
+				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a)
+				let esds = mp4a.Children.First(box => box.Type == BoxType.esds)
 
 				let Mp4aBoxInfo = new
 				{
@@ -83,7 +83,7 @@ namespace mp4_parse_test1
 					}
 				}
 
-				let stts = stbl.Children.First(box => box.Type == BoxType.Stts)
+				let stts = stbl.Children.First(box => box.Type == BoxType.stts)
 
 				let DecodingTimeToSampleBoxInfo = new
 				{
@@ -99,7 +99,7 @@ namespace mp4_parse_test1
 						}
 				}
 
-				let stsc = stbl.Children.First(box => box.Type == BoxType.Stsc)
+				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc)
 
 				let SampleToChunkBoxInfo = new
 				{
