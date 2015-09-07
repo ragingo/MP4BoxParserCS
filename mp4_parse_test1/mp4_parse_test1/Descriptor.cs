@@ -290,6 +290,8 @@ namespace mp4_parse_test1
 		public ES_Descriptor()
 		{
 			Tag = DescriptorTag.ES_DescrTag;
+			DecConfigDescr = new DecoderConfigDescriptor();
+			SlConfigDescr = new SLConfigDescriptor();
 			IpiPtr = new IPI_DescrPointer[2];
 			IpIDS = new IP_IdentificationDataSet[256];
 			IpmpDescrPtr = new IPMP_DescriptorPointer[256];

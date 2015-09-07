@@ -424,24 +424,37 @@ namespace mp4_parse_test1
 
 		public ESDescriptorBoxNode()
 		{
+			ES = new ES_Descriptor();
 		}
 	}
 
 	// mp4v
 	class Mp4VisualSampleEntryNode : VisualSampleEntryNode
 	{
-		public ESDescriptorBoxNode ES { get; set; }
+		//public ESDescriptorBoxNode ES { get; set; }
+		public Mp4VisualSampleEntryNode()
+		{
+			//ES = new ESDescriptorBoxNode();
+		}
 	}
 
 	// mp4a
 	class Mp4AudioSampleEntryNode : AudioSampleEntryNode
 	{
-		public ESDescriptorBoxNode ES { get; set; }
+		//public ESDescriptorBoxNode ES { get; set; }
+		public Mp4AudioSampleEntryNode()
+		{
+			//ES = new ESDescriptorBoxNode();
+		}
 	}
 
 	// mp4s
 	class MpegSampleEntryNode : SampleEntryNode
 	{
-		public ESDescriptorBoxNode ES { get; set; }
+		//public ESDescriptorBoxNode ES { get; set; }
+		public MpegSampleEntryNode()
+		{
+			//ES = new ESDescriptorBoxNode();
+		}
 	}
 }

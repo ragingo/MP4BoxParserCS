@@ -61,6 +61,9 @@ namespace mp4_parse_test1
 				case BoxType.mp4a:
 					nodes.Add(ParseMp4a(reader, sibling));
 					break;
+				case BoxType.esds:
+					nodes.Add(ParseEsds(reader, sibling));
+					break;
 				default:
 					nodes.Add(sibling);
 					reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
@@ -160,16 +163,43 @@ namespace mp4_parse_test1
 		// 8.5.1. p32 AudioSampleEntry
 		private BoxNode ParseMp4a(BinaryReader2 reader, BoxNode sibling)
 		{
-			var newSibling = sibling.As<AudioSampleEntryNode>();
+			var newSibling = sibling.As<Mp4AudioSampleEntryNode>();
 			reader.BaseStream.Seek(6 + 2, SeekOrigin.Current); // SampleEntry
 			reader.BaseStream.Seek(4 * 2, SeekOrigin.Current); // reserved
 			newSibling.ChannelCount = reader.ReadUInt16();
 			newSibling.SampleSize = reader.ReadUInt16();
 			reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
-			newSibling.SampleRate = reader.ReadUInt32();
+			newSibling.SampleRate = reader.ReadUInt32(); // TODO: 値おかしい？？？
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 
 			return newSibling;
+		}
+
+		private BoxNode ParseEsds(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<ESDescriptorBoxNode>();
+			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.ES.Tag = (DescriptorTag)reader.ReadByte();
+			reader.ReadBytes(3); // 0x80 * 3
+			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
+			newSibling.ES.ES_ID = reader.ReadUInt16();
+			newSibling.ES.StreamPriority = reader.ReadByte();
+
+			newSibling.ES.DecConfigDescr.Tag = (DescriptorTag)reader.ReadByte();
+			reader.ReadBytes(3); // 0x80 * 3
+			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
+			newSibling.ES.DecConfigDescr.ObjectTypeIndication = reader.ReadByte();
+			reader.ReadBytes(1); // DecConfigDescr.StreamType + DecConfigDescr.UpStream + DecConfigDescr.Reserved
+			reader.ReadBytes(3); // DecConfigDescr.BufferSizeDB
+			newSibling.ES.DecConfigDescr.MaxBitrate = reader.ReadUInt32();
+			newSibling.ES.DecConfigDescr.AvgBitrate = reader.ReadUInt32();
+
+			// TODO: ...
+
+			// TODO: 動作確認の為、BOX末尾へシーク
+			reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);
+
+			return sibling;
 		}
 
 		// 8.5.1. p31 VisualSampleEntry
