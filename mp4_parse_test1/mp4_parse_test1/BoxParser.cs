@@ -152,9 +152,14 @@ namespace mp4_parse_test1
 		// 8.5.1. p32 AudioSampleEntry
 		private void ParseMp4a(BinaryReader2 reader, BoxNode sibling)
 		{
+			var newSibling = sibling.As<AudioSampleEntryNode>();
 			reader.BaseStream.Seek(6 + 2, SeekOrigin.Current); // SampleEntry
-			reader.BaseStream.Seek(4 * 2 + 2 + 2 + 2 + 2 + 4, SeekOrigin.Current);
-			sibling.Children.AddRange(GetBoxes(reader, sibling));
+			reader.BaseStream.Seek(4 * 2, SeekOrigin.Current); // reserved
+			newSibling.ChannelCount = reader.ReadUInt16();
+			newSibling.SampleSize = reader.ReadUInt16();
+			reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
+			newSibling.SampleRate = reader.ReadUInt32();
+			sibling.Children.AddRange(GetBoxes(reader, newSibling));
 		}
 
 		// 8.5.1. p31 VisualSampleEntry

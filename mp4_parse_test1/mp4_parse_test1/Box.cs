@@ -166,4 +166,21 @@ namespace mp4_parse_test1
 			PreDefined3 = -1;
 		}
 	}
+
+	class AudioSampleEntryNode : SampleEntryNode
+	{
+		public new UInt32[] Reserved { get; set; }
+		public UInt16 ChannelCount { get; set; }
+		public UInt16 SampleSize { get; set; }
+		public UInt16 PreDefined { get; set; }
+		public UInt16 Reserved2 { get; set; }
+		public UInt32 SampleRate { get; set; }
+
+		public AudioSampleEntryNode()
+		{
+			Reserved = new UInt32[2];
+			ChannelCount = 2;
+			SampleSize = 16;
+		}
+	}
 }

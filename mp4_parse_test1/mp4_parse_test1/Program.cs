@@ -24,7 +24,8 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
+			//const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
+			const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
@@ -34,8 +35,6 @@ namespace mp4_parse_test1
 				DumpBoxTree(nodes);
 				ShowHandlers(fs, br, nodes);
 				ShowAudioInfo(fs, br, nodes);
-
-				//Console.WriteLine((nodes.First(x => x.Type == BoxType.Moov).Children.First(x => x.Type == BoxType.Mvhd) as MvhdBoxNode).CreationTime);
 
 				return;
 			}
@@ -74,12 +73,12 @@ namespace mp4_parse_test1
 				{
 					DecoderConfigDescriptor = new
 					{
-						Channels = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-						BitPerSample = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
-						SampleRate = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt32()) : "error!",
-						ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}", br.ReadByte()) : "error!",
-						MaxBitRate = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!",
-						AvgBitRate = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32()) : "error!"
+						Channels             = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
+						BitPerSample         = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt16()) : "error!",
+						SampleRate           = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadUInt32()) : "error!",
+						ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}",   br.ReadByte())   : "error!",
+						MaxBitRate           = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32())  : "error!",
+						AvgBitRate           = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,#}", br.ReadInt32())  : "error!"
 					}
 				}
 
@@ -120,6 +119,7 @@ namespace mp4_parse_test1
 				}
 
 				select new {
+					Mp4aBoxInfo = Mp4aBoxInfo,
 					DecodingTimeToSampleBoxInfo = DecodingTimeToSampleBoxInfo,
 					SampleToChunkBoxInfo = SampleToChunkBoxInfo,
 				};
