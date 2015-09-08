@@ -30,47 +30,45 @@ namespace mp4_parse_test1
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
 			{
-				var nodes = new BoxParser().Parse(br);
+				var boxes = new BoxParser().Parse(br);
 
-				DumpBoxTree(nodes);
-				ShowHandlers(fs, br, nodes);
+				DumpBoxTree(boxes);
+				ShowHandlers(fs, br, boxes);
 				//ShowAudioInfo(fs, br, nodes);
 
 				return;
 			}
 		}
 
-		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<Box> nodes)
+		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<Box> boxes)
 		{
 			var result =
-				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
+				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
-				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBox
-				where hdlr.HandlerType == HandlerTypes.Sound || 
-					  hdlr.HandlerType == HandlerTypes.Video
+				let mdia = box1.GetChild(BoxType.mdia)
+				let hdlr = mdia.GetChild<HdlrBox>()
 				select hdlr;
 
 			result.ToList().ForEach(Console.WriteLine);
 		}
 
-		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<Box> nodes)
+		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<Box> boxes)
 		{
 			var audio =
-				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
+				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
-				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBox
+				let mdia = box1.GetChild(BoxType.mdia)
+				let hdlr = mdia.GetChild<HdlrBox>()
 				where hdlr.HandlerType == HandlerTypes.Sound
 
-				let minf = mdia.Children.First(box => box.Type == BoxType.minf)
-				let stbl = minf.Children.First(box => box.Type == BoxType.stbl) as StblBox
-				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBox
-				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntry
-				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBox
-				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBox
-				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc) as StscBox
-				let stsz = stbl.Children.First(box => box.Type == BoxType.stsz) as StszBox
+				let minf = mdia.GetChild(BoxType.minf)
+				let stbl = minf.GetChild<StblBox>()
+				let stsd = stbl.GetChild<StsdBox>()
+				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
+				let esds = mp4a.GetChild<ESDescriptorBox>()
+				let stts = stbl.GetChild<SttsBox>()
+				let stsc = stbl.GetChild<StscBox>()
+				let stsz = stbl.GetChild<StszBox>()
 
 				select new {
 					esds = esds,

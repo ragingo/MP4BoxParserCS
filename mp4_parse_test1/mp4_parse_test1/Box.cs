@@ -310,6 +310,17 @@ namespace mp4_parse_test1
 			return sb.ToString();
 		}
 
+		public T GetChild<T>()
+			where T : Box, new()
+		{
+			return Children.FirstOrDefault(b => b.GetType() == typeof(T)) as T;
+		}
+
+		public Box GetChild(BoxType type)
+		{
+			return Children.FirstOrDefault(b => b.Type == type);
+		}
+
 		public T As<T>()
 			where T : Box, new()
 		{
