@@ -278,19 +278,19 @@ namespace mp4_parse_test1
 		public const string AuxiliaryVideo = "auxv";
 	}
 
-	class BoxNode
+	class Box
 	{
 		public long Offset { get; set; }
 		public uint Size { get; set; }
 		public BoxType Type { get; set; }
-		public BoxNode Parent { get; set; }
-		public List<BoxNode> Children { get; private set; }
+		public Box Parent { get; set; }
+		public List<Box> Children { get; private set; }
 		public int Level { get; set; }
 		public bool IsRoot { get { return Level == 0; } }
 
-		public BoxNode()
+		public Box()
 		{
-			Children = new List<BoxNode>();
+			Children = new List<Box>();
 		}
 
 		public override string ToString()
@@ -302,7 +302,7 @@ namespace mp4_parse_test1
 		}
 
 		public T As<T>()
-			where T : BoxNode, new()
+			where T : Box, new()
 		{
 			var newNode = new T();
 			newNode.Offset = Offset;
@@ -315,24 +315,24 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class FullBoxNode : BoxNode
+	class FullBox : Box
 	{
 		public byte Version { get; set; }
 		public UInt32 Flags { get; set; }
 
-		public FullBoxNode()
+		public FullBox()
 		{
 		}
 	}
 
-	class MoovBoxNode : BoxNode
+	class MoovBox : Box
 	{
-		public MoovBoxNode()
+		public MoovBox()
 		{
 		}
 	}
 
-	class MvhdBoxNode : FullBoxNode
+	class MvhdBox : FullBox
 	{
 		public DateTime CreationTime { get; set; }
 		public DateTime ModificationTime { get; set; }
@@ -342,46 +342,46 @@ namespace mp4_parse_test1
 		public Single Volume { get; set; }
 		public UInt32 NextTrackId { get; set; }
 
-		public MvhdBoxNode()
+		public MvhdBox()
 		{
 		}
 	}
 
-	class HdlrBoxNode : FullBoxNode
+	class HdlrBox : FullBox
 	{
 		public string HandlerType { get; set; }
 		public string Name { get; set; }
 
-		public HdlrBoxNode()
+		public HdlrBox()
 		{
 		}
 	}
 
-	class MinfBoxNode : BoxNode
+	class MinfBox : Box
 	{
-		public MinfBoxNode()
+		public MinfBox()
 		{
 		}
 	}
 
 
-	class StblBoxNode : BoxNode
+	class StblBox : Box
 	{
-		public StblBoxNode()
+		public StblBox()
 		{
 		}
 	}
 
-	class StsdBoxNode : BoxNode
+	class StsdBox : Box
 	{
 		public uint SampleEntries { get; set; }
 
-		public StsdBoxNode()
+		public StsdBox()
 		{
 		}
 	}
 
-	class SttsBoxNode : FullBoxNode
+	class SttsBox : FullBox
 	{
 		public UInt32 EntryCount { get; set; }
 
@@ -392,13 +392,13 @@ namespace mp4_parse_test1
 		}
 		public List<Entry> Entries { get; private set; }
 
-		public SttsBoxNode()
+		public SttsBox()
 		{
 			Entries = new List<Entry>();
 		}
 	}
 
-	class StscBoxNode : FullBoxNode
+	class StscBox : FullBox
 	{
 		public UInt32 EntryCount { get; set; }
 
@@ -410,24 +410,24 @@ namespace mp4_parse_test1
 		}
 		public List<Entry> Entries { get; private set; }
 
-		public StscBoxNode()
+		public StscBox()
 		{
 			Entries = new List<Entry>();
 		}
 	}
 
-	class SampleEntryNode : BoxNode
+	class SampleEntry : Box
 	{
 		public byte[] Reserved { get; private set; }
 		public UInt16 DataReferenceIndex { get; set; }
 
-		public SampleEntryNode()
+		public SampleEntry()
 		{
 			Reserved = new byte[6];
 		}
 	}
 
-	class VisualSampleEntryNode : SampleEntryNode
+	class VisualSampleEntry : SampleEntry
 	{
 		public UInt16 PreDefined { get; set; }
 		public UInt16 Reserved2 { get; set; }
@@ -442,7 +442,7 @@ namespace mp4_parse_test1
 		public UInt16 Depth { get; set; }
 		public Int32 PreDefined3 { get; set; }
 
-		public VisualSampleEntryNode()
+		public VisualSampleEntry()
 		{
 			PreDefined2 = new UInt32[3];
 			HorizontalResolution = 0x00480000 >> 16;
@@ -453,7 +453,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class AudioSampleEntryNode : SampleEntryNode
+	class AudioSampleEntry : SampleEntry
 	{
 		public new UInt32[] Reserved { get; set; }
 		public UInt16 ChannelCount { get; set; }
@@ -462,7 +462,7 @@ namespace mp4_parse_test1
 		public UInt16 Reserved2 { get; set; }
 		public UInt32 SampleRate { get; set; }
 
-		public AudioSampleEntryNode()
+		public AudioSampleEntry()
 		{
 			Reserved = new UInt32[2];
 			ChannelCount = 2;
@@ -470,36 +470,36 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class ESDescriptorBoxNode : FullBoxNode
+	class ESDescriptorBox : FullBox
 	{
 		public ESDescriptor ES { get; set; }
 
-		public ESDescriptorBoxNode()
+		public ESDescriptorBox()
 		{
 			ES = new ESDescriptor();
 		}
 	}
 
 	// mp4v
-	class Mp4VisualSampleEntryNode : VisualSampleEntryNode
+	class Mp4VisualSampleEntry : VisualSampleEntry
 	{
-		public Mp4VisualSampleEntryNode()
+		public Mp4VisualSampleEntry()
 		{
 		}
 	}
 
 	// mp4a
-	class Mp4AudioSampleEntryNode : AudioSampleEntryNode
+	class Mp4AudioSampleEntry : AudioSampleEntry
 	{
-		public Mp4AudioSampleEntryNode()
+		public Mp4AudioSampleEntry()
 		{
 		}
 	}
 
 	// mp4s
-	class MpegSampleEntryNode : SampleEntryNode
+	class MpegSampleEntry : SampleEntry
 	{
-		public MpegSampleEntryNode()
+		public MpegSampleEntry()
 		{
 		}
 	}

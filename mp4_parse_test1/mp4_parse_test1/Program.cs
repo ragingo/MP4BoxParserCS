@@ -8,7 +8,7 @@ namespace mp4_parse_test1
 {
 	class Program
 	{
-		static void DumpBoxTree(List<BoxNode> nodes, int level = 0)
+		static void DumpBoxTree(List<Box> nodes, int level = 0)
 		{
 			foreach (var node in nodes)
 			{
@@ -30,7 +30,7 @@ namespace mp4_parse_test1
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
 			{
-				var nodes = new BoxParser().GetBoxes(br);
+				var nodes = new BoxParser().Parse(br);
 
 				DumpBoxTree(nodes);
 				ShowHandlers(fs, br, nodes);
@@ -40,13 +40,13 @@ namespace mp4_parse_test1
 			}
 		}
 
-		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<BoxNode> nodes)
+		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<Box> nodes)
 		{
 			var result =
 				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
 				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBoxNode
+				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBox
 				where hdlr.HandlerType == HandlerTypes.Sound || 
 					  hdlr.HandlerType == HandlerTypes.Video
 				select hdlr;
@@ -54,22 +54,22 @@ namespace mp4_parse_test1
 			result.ToList().ForEach(Console.WriteLine);
 		}
 
-		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<BoxNode> nodes)
+		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<Box> nodes)
 		{
 			var audio =
 				from box1 in nodes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
 				let mdia = box1.Children.First(box => box.Type == BoxType.mdia)
-				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBoxNode
+				let hdlr = mdia.Children.First(box => box.Type == BoxType.hdlr) as HdlrBox
 				where hdlr.HandlerType == HandlerTypes.Sound
 
 				let minf = mdia.Children.First(box => box.Type == BoxType.minf)
-				let stbl = minf.Children.First(box => box.Type == BoxType.stbl) as StblBoxNode
-				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBoxNode
-				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntryNode
-				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBoxNode
-				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBoxNode
-				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc) as StscBoxNode
+				let stbl = minf.Children.First(box => box.Type == BoxType.stbl) as StblBox
+				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBox
+				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntry
+				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBox
+				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBox
+				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc) as StscBox
 
 				select new {
 					esds = esds,

@@ -9,21 +9,21 @@ namespace mp4_parse_test1
 {
 	class BoxParser
 	{
-		public List<BoxNode> GetBoxes(BinaryReader2 reader)
+		public List<Box> Parse(BinaryReader2 reader)
 		{
 			return GetBoxes(reader, null);
 		}
 
-		private List<BoxNode> GetBoxes(BinaryReader2 reader, BoxNode parent)
+		private List<Box> GetBoxes(BinaryReader2 reader, Box parent)
 		{
-			var nodes = new List<BoxNode>();
+			var boxes = new List<Box>();
 
 			while (reader.BaseStream.Position < reader.BaseStream.Length)
 			{
 				UInt32 boxSize = reader.ReadUInt32();
 				BoxType boxType = (BoxType)reader.ReadUInt32();
 
-				var sibling = new BoxNode();
+				var sibling = new Box();
 				sibling.Offset = reader.BaseStream.Position - 4 * 2;
 				sibling.Size = boxSize;
 				sibling.Type = boxType;
@@ -35,47 +35,47 @@ namespace mp4_parse_test1
 				case BoxType.mdia:
 				case BoxType.dinf:
 				case BoxType.udta:
-					nodes.Add(sibling);
+					boxes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
 					break;
 				case BoxType.moov:
-					nodes.Add(ParseMoov(reader, sibling));
+					boxes.Add(ParseMoov(reader, sibling));
 					break;
 				case BoxType.mvhd:
-					nodes.Add(ParseMvhd(reader, sibling));
+					boxes.Add(ParseMvhd(reader, sibling));
 					break;
 				case BoxType.hdlr:
-					nodes.Add(ParseHdlr(reader, sibling));
+					boxes.Add(ParseHdlr(reader, sibling));
 					break;
 				case BoxType.minf:
-					nodes.Add(ParseMinf(reader, sibling));
+					boxes.Add(ParseMinf(reader, sibling));
 					break;
 				case BoxType.dref:
-					nodes.Add(ParseDref(reader, sibling));
+					boxes.Add(ParseDref(reader, sibling));
 					break;
 				case BoxType.stbl:
-					nodes.Add(ParseStbl(reader, sibling));
+					boxes.Add(ParseStbl(reader, sibling));
 					break;
 				case BoxType.stts:
-					nodes.Add(ParseStts(reader, sibling));
+					boxes.Add(ParseStts(reader, sibling));
 					break;
 				case BoxType.stsc:
-					nodes.Add(ParseStsc(reader, sibling));
+					boxes.Add(ParseStsc(reader, sibling));
 					break;
 				case BoxType.stsd:
-					nodes.Add(ParseStsd(reader, sibling));
+					boxes.Add(ParseStsd(reader, sibling));
 					break;
 				case BoxType.avc1:
-					nodes.Add(ParseAvc1(reader, sibling));
+					boxes.Add(ParseAvc1(reader, sibling));
 					break;
 				case BoxType.mp4a:
-					nodes.Add(ParseMp4a(reader, sibling));
+					boxes.Add(ParseMp4a(reader, sibling));
 					break;
 				case BoxType.esds:
-					nodes.Add(ParseEsds(reader, sibling));
+					boxes.Add(ParseEsds(reader, sibling));
 					break;
 				default:
-					nodes.Add(sibling);
+					boxes.Add(sibling);
 					reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
 				}
@@ -83,24 +83,24 @@ namespace mp4_parse_test1
 				if (parent != null &&
 					parent.Offset + parent.Size == sibling.Offset + sibling.Size)
 				{
-					return nodes;
+					return boxes;
 				}
 			}
 
-			return nodes;
+			return boxes;
 		}
 
-		private BoxNode ParseMoov(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseMoov(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<MoovBoxNode>();
+			var newSibling = sibling.As<MoovBox>();
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 			return newSibling;
 		}
 
 		// Movie Header Box
-		private BoxNode ParseMvhd(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseMvhd(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<MvhdBoxNode>();
+			var newSibling = sibling.As<MvhdBox>();
 			newSibling.Version = reader.ReadByte();
 			newSibling.Flags = reader.ReadUInt24();
 			if (newSibling.Version == 1)
@@ -129,9 +129,9 @@ namespace mp4_parse_test1
 		}
 
 		// Handler Reference Box
-		private BoxNode ParseHdlr(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseHdlr(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<HdlrBoxNode>();
+			var newSibling = sibling.As<HdlrBox>();
 			newSibling.Version = reader.ReadByte();
 			newSibling.Flags = reader.ReadUInt24();
 			reader.ReadUInt32(); // pre_defined: usigned int(32)
@@ -150,15 +150,15 @@ namespace mp4_parse_test1
 		}
 
 		// Media Information Box
-		private BoxNode ParseMinf(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseMinf(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<MinfBoxNode>();
+			var newSibling = sibling.As<MinfBox>();
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 			return newSibling;
 		}
 
 		// Data Reference Box
-		private BoxNode ParseDref(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseDref(BinaryReader2 reader, Box sibling)
 		{
 			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			reader.ReadUInt32();// entries
@@ -168,23 +168,23 @@ namespace mp4_parse_test1
 		}
 
 		// Sample Table Box
-		private BoxNode ParseStbl(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseStbl(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<StblBoxNode>();
+			var newSibling = sibling.As<StblBox>();
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 			return newSibling;
 		}
 
 		// Decoding Time to Sample Box
-		private BoxNode ParseStts(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseStts(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<SttsBoxNode>();
+			var newSibling = sibling.As<SttsBox>();
 			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			newSibling.EntryCount = reader.ReadUInt32();
 
 			for (int i=0; i<newSibling.EntryCount; i++)
 			{
-				var entry = new SttsBoxNode.Entry();
+				var entry = new SttsBox.Entry();
 				entry.SampleCount = reader.ReadUInt32();
 				entry.SampleDelta = reader.ReadUInt32();
 				newSibling.Entries.Add(entry);
@@ -193,15 +193,15 @@ namespace mp4_parse_test1
 		}
 
 		// Sample To Chunk Box
-		private BoxNode ParseStsc(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseStsc(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<StscBoxNode>();
+			var newSibling = sibling.As<StscBox>();
 			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			newSibling.EntryCount = reader.ReadUInt32();
 
 			for (int i = 0; i < newSibling.EntryCount; i++)
 			{
-				var entry = new StscBoxNode.Entry();
+				var entry = new StscBox.Entry();
 				entry.FirstChunk = reader.ReadUInt32();
 				entry.SamplesPerChunk = reader.ReadUInt32();
 				entry.SampleDescriptionIndex = reader.ReadUInt32();
@@ -211,10 +211,10 @@ namespace mp4_parse_test1
 		}
 
 		// Sample Description Box
-		private BoxNode ParseStsd(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseStsd(BinaryReader2 reader, Box sibling)
 		{
 			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			var newSibling = sibling.As<StsdBoxNode>();
+			var newSibling = sibling.As<StsdBox>();
 			newSibling.SampleEntries = reader.ReadUInt32();
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 
@@ -222,9 +222,9 @@ namespace mp4_parse_test1
 		}
 
 		// 8.5.1. p32 AudioSampleEntry
-		private BoxNode ParseMp4a(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseMp4a(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<Mp4AudioSampleEntryNode>();
+			var newSibling = sibling.As<Mp4AudioSampleEntry>();
 			reader.BaseStream.Seek(6 + 2, SeekOrigin.Current); // SampleEntry
 			reader.BaseStream.Seek(4 * 2, SeekOrigin.Current); // reserved
 			newSibling.ChannelCount = reader.ReadUInt16();
@@ -236,9 +236,9 @@ namespace mp4_parse_test1
 			return newSibling;
 		}
 
-		private BoxNode ParseEsds(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseEsds(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<ESDescriptorBoxNode>();
+			var newSibling = sibling.As<ESDescriptorBox>();
 			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			newSibling.ES.Tag = (DescriptorTag)reader.ReadByte();
 			reader.ReadBytes(3); // 0x80 * 3
@@ -264,9 +264,9 @@ namespace mp4_parse_test1
 		}
 
 		// 8.5.1. p31 VisualSampleEntry
-		private BoxNode ParseAvc1(BinaryReader2 reader, BoxNode sibling)
+		private Box ParseAvc1(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<VisualSampleEntryNode>();
+			var newSibling = sibling.As<VisualSampleEntry>();
 			reader.BaseStream.Seek(6, SeekOrigin.Current); // reserved
 			newSibling.DataReferenceIndex = reader.ReadUInt16();
 			reader.BaseStream.Seek(2 + 2 + 4 * 3, SeekOrigin.Current); // pre_defined + reserved + predefined
