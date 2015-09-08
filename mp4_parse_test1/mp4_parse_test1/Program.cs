@@ -70,11 +70,13 @@ namespace mp4_parse_test1
 				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBox
 				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBox
 				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc) as StscBox
+				let stsz = stbl.Children.First(box => box.Type == BoxType.stsz) as StszBox
 
 				select new {
 					esds = esds,
 					stts = stts,
 					stsc = stsc,
+					stsz = stsz,
 				};
 
 			foreach (var item in audio)
@@ -87,6 +89,10 @@ namespace mp4_parse_test1
 				foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
 				{
 					Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
+				}
+				foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				{
+					Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
 				}
 			}
 		}

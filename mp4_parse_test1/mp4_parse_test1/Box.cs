@@ -278,7 +278,7 @@ namespace mp4_parse_test1
 		public const string AuxiliaryVideo = "auxv";
 	}
 
-	class Box
+	public class Box
 	{
 		public long Offset { get; set; }
 		public uint Size { get; set; }
@@ -315,7 +315,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class FullBox : Box
+	public class FullBox : Box
 	{
 		public byte Version { get; set; }
 		public UInt32 Flags { get; set; }
@@ -325,14 +325,16 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class MoovBox : Box
+	// 8.2.1 Movie Box
+	public class MoovBox : Box
 	{
 		public MoovBox()
 		{
 		}
 	}
 
-	class MvhdBox : FullBox
+	// 8.2.2 Movie Header Box
+	public class MvhdBox : FullBox
 	{
 		public DateTime CreationTime { get; set; }
 		public DateTime ModificationTime { get; set; }
@@ -347,7 +349,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class HdlrBox : FullBox
+	public class HdlrBox : FullBox
 	{
 		public string HandlerType { get; set; }
 		public string Name { get; set; }
@@ -357,7 +359,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class MinfBox : Box
+	public class MinfBox : Box
 	{
 		public MinfBox()
 		{
@@ -365,14 +367,14 @@ namespace mp4_parse_test1
 	}
 
 
-	class StblBox : Box
+	public class StblBox : Box
 	{
 		public StblBox()
 		{
 		}
 	}
 
-	class StsdBox : Box
+	public class StsdBox : Box
 	{
 		public uint SampleEntries { get; set; }
 
@@ -381,7 +383,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class SttsBox : FullBox
+	public class SttsBox : FullBox
 	{
 		public UInt32 EntryCount { get; set; }
 
@@ -398,7 +400,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class StscBox : FullBox
+	public class StscBox : FullBox
 	{
 		public UInt32 EntryCount { get; set; }
 
@@ -416,7 +418,25 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class SampleEntry : Box
+	// 8.7.3.2 Sample Size Box
+	public class StszBox : FullBox
+	{
+		public UInt32 SampleSize { get; set; }
+		public UInt32 SampleCount { get; set; }
+
+		public class Entry
+		{
+			public UInt32 Size { get; set; }
+		}
+		public List<Entry> Entries { get; private set; }
+
+		public StszBox()
+		{
+			Entries = new List<Entry>();
+		}
+	}
+
+	public class SampleEntry : Box
 	{
 		public byte[] Reserved { get; private set; }
 		public UInt16 DataReferenceIndex { get; set; }
@@ -427,7 +447,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class VisualSampleEntry : SampleEntry
+	public class VisualSampleEntry : SampleEntry
 	{
 		public UInt16 PreDefined { get; set; }
 		public UInt16 Reserved2 { get; set; }
@@ -453,7 +473,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class AudioSampleEntry : SampleEntry
+	public class AudioSampleEntry : SampleEntry
 	{
 		public new UInt32[] Reserved { get; set; }
 		public UInt16 ChannelCount { get; set; }
@@ -470,7 +490,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	class ESDescriptorBox : FullBox
+	public class ESDescriptorBox : FullBox
 	{
 		public ESDescriptor ES { get; set; }
 
@@ -481,7 +501,7 @@ namespace mp4_parse_test1
 	}
 
 	// mp4v
-	class Mp4VisualSampleEntry : VisualSampleEntry
+	public class Mp4VisualSampleEntry : VisualSampleEntry
 	{
 		public Mp4VisualSampleEntry()
 		{
@@ -489,7 +509,7 @@ namespace mp4_parse_test1
 	}
 
 	// mp4a
-	class Mp4AudioSampleEntry : AudioSampleEntry
+	public class Mp4AudioSampleEntry : AudioSampleEntry
 	{
 		public Mp4AudioSampleEntry()
 		{
@@ -497,7 +517,7 @@ namespace mp4_parse_test1
 	}
 
 	// mp4s
-	class MpegSampleEntry : SampleEntry
+	public class MpegSampleEntry : SampleEntry
 	{
 		public MpegSampleEntry()
 		{

@@ -62,6 +62,9 @@ namespace mp4_parse_test1
 				case BoxType.stsc:
 					boxes.Add(ParseStsc(reader, sibling));
 					break;
+				case BoxType.stsz:
+					boxes.Add(ParseStsz(reader, sibling));
+					break;
 				case BoxType.stsd:
 					boxes.Add(ParseStsd(reader, sibling));
 					break;
@@ -90,6 +93,7 @@ namespace mp4_parse_test1
 			return boxes;
 		}
 
+		// Movie Box
 		private Box ParseMoov(BinaryReader2 reader, Box sibling)
 		{
 			var newSibling = sibling.As<MoovBox>();
@@ -207,6 +211,27 @@ namespace mp4_parse_test1
 				entry.SampleDescriptionIndex = reader.ReadUInt32();
 				newSibling.Entries.Add(entry);
 			}
+			return newSibling;
+		}
+
+		// Sample Size Box
+		private Box ParseStsz(BinaryReader2 reader, Box sibling)
+		{
+			var newSibling = sibling.As<StszBox>();
+			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.SampleSize = reader.ReadUInt32();
+			newSibling.SampleCount = reader.ReadUInt32();
+
+			if (newSibling.SampleSize == 0)
+			{
+				for (int i = 0; i < newSibling.SampleCount; i++)
+				{
+					var entry = new StszBox.Entry();
+					entry.Size = reader.ReadUInt32();
+					newSibling.Entries.Add(entry);
+				}
+			}
+
 			return newSibling;
 		}
 
