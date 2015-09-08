@@ -278,6 +278,15 @@ namespace mp4_parse_test1
 		public const string AuxiliaryVideo = "auxv";
 	}
 
+	// http://www.ftyps.com/
+	public enum Brand : uint
+	{
+		Unknown = uint.MaxValue,
+		isom = ('i' << 24) | ('s' << 16) | ('o' << 8) | ('m' << 0),
+		mp41 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('1' << 0),
+		mp42 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('2' << 0),
+	}
+
 	public class Box
 	{
 		public long Offset { get; set; }
@@ -322,6 +331,19 @@ namespace mp4_parse_test1
 
 		public FullBox()
 		{
+		}
+	}
+
+	// 4.3 File Type Box
+	public class FtypBox : Box
+	{
+		public UInt32 MajorBrand { get; set; }
+		public UInt32 MinorVersion { get; set; }
+		public List<Brand> CompatibleBrands { get; private set; }
+
+		public FtypBox()
+		{
+			CompatibleBrands = new List<Brand>();
 		}
 	}
 

@@ -38,6 +38,9 @@ namespace mp4_parse_test1
 					boxes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
 					break;
+				case BoxType.ftyp:
+					boxes.Add(ParseFtyp(reader, sibling));
+					break;
 				case BoxType.moov:
 					boxes.Add(ParseMoov(reader, sibling));
 					break;
@@ -91,6 +94,21 @@ namespace mp4_parse_test1
 			}
 
 			return boxes;
+		}
+
+		// File Type Box
+		private Box ParseFtyp(BinaryReader2 reader, Box sibling)
+		{
+			var newSibling = sibling.As<FtypBox>();
+			newSibling.MajorBrand = reader.ReadUInt32();
+			newSibling.MinorVersion = reader.ReadUInt32();
+
+			while (newSibling.Offset + newSibling.Size != reader.BaseStream.Position)
+			{
+				newSibling.CompatibleBrands.Add((Brand)reader.ReadUInt32());
+			}
+
+			return newSibling;
 		}
 
 		// Movie Box
