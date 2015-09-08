@@ -357,6 +357,21 @@ namespace mp4_parse_test1
 		}
 	}
 
+	class MinfBoxNode : BoxNode
+	{
+		public MinfBoxNode()
+		{
+		}
+	}
+
+
+	class StblBoxNode : BoxNode
+	{
+		public StblBoxNode()
+		{
+		}
+	}
+
 	class StsdBoxNode : BoxNode
 	{
 		public uint SampleEntries { get; set; }

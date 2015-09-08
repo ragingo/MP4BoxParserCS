@@ -34,7 +34,7 @@ namespace mp4_parse_test1
 
 				DumpBoxTree(nodes);
 				ShowHandlers(fs, br, nodes);
-				ShowAudioInfo(fs, br, nodes);
+				//ShowAudioInfo(fs, br, nodes);
 
 				return;
 			}
@@ -64,7 +64,7 @@ namespace mp4_parse_test1
 				where hdlr.HandlerType == HandlerTypes.Sound
 
 				let minf = mdia.Children.First(box => box.Type == BoxType.minf)
-				let stbl = minf.Children.First(box => box.Type == BoxType.stbl)
+				let stbl = minf.Children.First(box => box.Type == BoxType.stbl) as StblBoxNode
 				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBoxNode
 				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntryNode
 				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBoxNode

@@ -33,9 +33,7 @@ namespace mp4_parse_test1
 				{
 				case BoxType.trak:
 				case BoxType.mdia:
-				case BoxType.minf:
 				case BoxType.dinf:
-				case BoxType.stbl:
 				case BoxType.udta:
 					nodes.Add(sibling);
 					sibling.Children.AddRange(GetBoxes(reader, sibling));
@@ -49,8 +47,14 @@ namespace mp4_parse_test1
 				case BoxType.hdlr:
 					nodes.Add(ParseHdlr(reader, sibling));
 					break;
+				case BoxType.minf:
+					nodes.Add(ParseMinf(reader, sibling));
+					break;
 				case BoxType.dref:
 					nodes.Add(ParseDref(reader, sibling));
+					break;
+				case BoxType.stbl:
+					nodes.Add(ParseStbl(reader, sibling));
 					break;
 				case BoxType.stts:
 					nodes.Add(ParseStts(reader, sibling));
@@ -145,6 +149,14 @@ namespace mp4_parse_test1
 			return newSibling;
 		}
 
+		// Media Information Box
+		private BoxNode ParseMinf(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<MinfBoxNode>();
+			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
+			return newSibling;
+		}
+
 		// Data Reference Box
 		private BoxNode ParseDref(BinaryReader2 reader, BoxNode sibling)
 		{
@@ -153,6 +165,14 @@ namespace mp4_parse_test1
 			sibling.Children.AddRange(GetBoxes(reader, sibling));
 
 			return sibling;
+		}
+
+		// Sample Table Box
+		private BoxNode ParseStbl(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<StblBoxNode>();
+			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
+			return newSibling;
 		}
 
 		// Decoding Time to Sample Box
