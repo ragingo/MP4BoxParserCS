@@ -69,42 +69,24 @@ namespace mp4_parse_test1
 				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntryNode
 				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBoxNode
 				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBoxNode
-				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc)
-
-				let SampleToChunkBoxInfo = new
-				{
-					Dummy = fs.Seek(stsc.Offset, SeekOrigin.Begin),
-					Dummy2 = fs.Seek(stsc.Offset + 8 + 4, SeekOrigin.Begin),
-					Entries =
-						from ent in Enumerable.Range(0, (int)br.ReadUInt32())
-						select new
-						{
-							_Index = ent+1,
-							FirstChunk = fs.Seek(stsc.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-							SamplePerChunk = fs.Seek(stsc.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-							SampleDescriptionIndex = fs.Seek(stsc.Offset + 8 + 4 + 4 + (ent * 4 * 3 + 8), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-							//FirstChunk = br.ReadUInt32(), // 何故か上のと絡むと、相対位置からの移動が狂う。。。
-							//SamplePerChunk = br.ReadUInt32(),
-							//SampleDescriptionIndex = br.ReadUInt32(),
-						}
-				}
+				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc) as StscBoxNode
 
 				select new {
 					esds = esds,
 					stts = stts,
-					SampleToChunkBoxInfo = SampleToChunkBoxInfo,
+					stsc = stsc,
 				};
 
 			foreach (var item in audio)
 			{
 				Console.WriteLine(item);
-				foreach (var item2 in item.stts.Entries.Select((x,i) => new { Index = i+1, Entry = x }))
+				foreach (var item2 in item.stts.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
 				{
-					Console.WriteLine("index:{0:#,0}, count:{1:#,0}, delta:{2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
+					Console.WriteLine("index: {0:#,0}, count: {1:#,0}, delta: {2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
 				}
-				foreach (var item2 in item.SampleToChunkBoxInfo.Entries)
+				foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
 				{
-					Console.WriteLine(item2);
+					Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
 				}
 			}
 		}

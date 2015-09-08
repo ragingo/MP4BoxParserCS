@@ -55,6 +55,9 @@ namespace mp4_parse_test1
 				case BoxType.stts:
 					nodes.Add(ParseStts(reader, sibling));
 					break;
+				case BoxType.stsc:
+					nodes.Add(ParseStsc(reader, sibling));
+					break;
 				case BoxType.stsd:
 					nodes.Add(ParseStsd(reader, sibling));
 					break;
@@ -164,6 +167,24 @@ namespace mp4_parse_test1
 				var entry = new SttsBoxNode.Entry();
 				entry.SampleCount = reader.ReadUInt32();
 				entry.SampleDelta = reader.ReadUInt32();
+				newSibling.Entries.Add(entry);
+			}
+			return newSibling;
+		}
+
+		// Sample To Chunk Box
+		private BoxNode ParseStsc(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<StscBoxNode>();
+			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.EntryCount = reader.ReadUInt32();
+
+			for (int i = 0; i < newSibling.EntryCount; i++)
+			{
+				var entry = new StscBoxNode.Entry();
+				entry.FirstChunk = reader.ReadUInt32();
+				entry.SamplesPerChunk = reader.ReadUInt32();
+				entry.SampleDescriptionIndex = reader.ReadUInt32();
 				newSibling.Entries.Add(entry);
 			}
 			return newSibling;
