@@ -24,8 +24,8 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
-			//const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
+			//const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
+			const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
@@ -65,23 +65,9 @@ namespace mp4_parse_test1
 
 				let minf = mdia.Children.First(box => box.Type == BoxType.minf)
 				let stbl = minf.Children.First(box => box.Type == BoxType.stbl)
-				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd)
-				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a)
-				let esds = mp4a.Children.First(box => box.Type == BoxType.esds)
-
-				let Mp4aBoxInfo = new
-				{
-					// esds box
-					DecoderConfigDescriptor = new
-					{
-						Channels             = fs.Seek(mp4a.Offset + 24, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt16()) : "error!",
-						BitPerSample         = fs.Seek(mp4a.Offset + 26, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt16()) : "error!",
-						SampleRate           = fs.Seek(mp4a.Offset + 30, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadUInt32()) : "error!",
-						ObjectTypeIndication = fs.Seek(mp4a.Offset + 55, SeekOrigin.Begin) != 0 ? string.Format("{0:X}",   br.ReadByte())   : "error!",
-						MaxBitRate           = fs.Seek(mp4a.Offset + 60, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadInt32())  : "error!",
-						AvgBitRate           = fs.Seek(mp4a.Offset + 64, SeekOrigin.Begin) != 0 ? string.Format("{0:#,0}", br.ReadInt32())  : "error!"
-					}
-				}
+				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBoxNode
+				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntryNode
+				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBoxNode
 
 				let stts = stbl.Children.First(box => box.Type == BoxType.stts)
 
@@ -120,7 +106,7 @@ namespace mp4_parse_test1
 				}
 
 				select new {
-					Mp4aBoxInfo = Mp4aBoxInfo,
+					Mp4aBoxInfo = esds,
 					DecodingTimeToSampleBoxInfo = DecodingTimeToSampleBoxInfo,
 					SampleToChunkBoxInfo = SampleToChunkBoxInfo,
 				};

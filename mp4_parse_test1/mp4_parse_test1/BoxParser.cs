@@ -169,7 +169,7 @@ namespace mp4_parse_test1
 			newSibling.ChannelCount = reader.ReadUInt16();
 			newSibling.SampleSize = reader.ReadUInt16();
 			reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
-			newSibling.SampleRate = reader.ReadUInt32(); // TODO: 値おかしい？？？
+			newSibling.SampleRate = reader.ReadUInt32() >> 16; // 16.16 hi.lo
 			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
 
 			return newSibling;
@@ -199,7 +199,7 @@ namespace mp4_parse_test1
 			// TODO: 動作確認の為、BOX末尾へシーク
 			reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);
 
-			return sibling;
+			return newSibling;
 		}
 
 		// 8.5.1. p31 VisualSampleEntry
