@@ -287,10 +287,12 @@ namespace mp4_parse_test1
 		public List<BoxNode> Children { get; private set; }
 		public int Level { get; set; }
 		public bool IsRoot { get { return Level == 0; } }
+
 		public BoxNode()
 		{
 			Children = new List<BoxNode>();
 		}
+
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder();
@@ -431,30 +433,24 @@ namespace mp4_parse_test1
 	// mp4v
 	class Mp4VisualSampleEntryNode : VisualSampleEntryNode
 	{
-		//public ESDescriptorBoxNode ES { get; set; }
 		public Mp4VisualSampleEntryNode()
 		{
-			//ES = new ESDescriptorBoxNode();
 		}
 	}
 
 	// mp4a
 	class Mp4AudioSampleEntryNode : AudioSampleEntryNode
 	{
-		//public ESDescriptorBoxNode ES { get; set; }
 		public Mp4AudioSampleEntryNode()
 		{
-			//ES = new ESDescriptorBoxNode();
 		}
 	}
 
 	// mp4s
 	class MpegSampleEntryNode : SampleEntryNode
 	{
-		//public ESDescriptorBoxNode ES { get; set; }
 		public MpegSampleEntryNode()
 		{
-			//ES = new ESDescriptorBoxNode();
 		}
 	}
 }
