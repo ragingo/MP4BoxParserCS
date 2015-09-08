@@ -52,6 +52,9 @@ namespace mp4_parse_test1
 				case BoxType.dref:
 					nodes.Add(ParseDref(reader, sibling));
 					break;
+				case BoxType.stts:
+					nodes.Add(ParseStts(reader, sibling));
+					break;
 				case BoxType.stsd:
 					nodes.Add(ParseStsd(reader, sibling));
 					break;
@@ -147,6 +150,23 @@ namespace mp4_parse_test1
 			sibling.Children.AddRange(GetBoxes(reader, sibling));
 
 			return sibling;
+		}
+
+		// Decoding Time to Sample Box
+		private BoxNode ParseStts(BinaryReader2 reader, BoxNode sibling)
+		{
+			var newSibling = sibling.As<SttsBoxNode>();
+			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.EntryCount = reader.ReadUInt32();
+
+			for (int i=0; i<newSibling.EntryCount; i++)
+			{
+				var entry = new SttsBoxNode.Entry();
+				entry.SampleCount = reader.ReadUInt32();
+				entry.SampleDelta = reader.ReadUInt32();
+				newSibling.Entries.Add(entry);
+			}
+			return newSibling;
 		}
 
 		// Sample Description Box

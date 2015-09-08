@@ -366,6 +366,23 @@ namespace mp4_parse_test1
 		}
 	}
 
+	class SttsBoxNode : FullBoxNode
+	{
+		public UInt32 EntryCount { get; set; }
+
+		public class Entry
+		{
+			public UInt32 SampleCount { get; set; }
+			public UInt32 SampleDelta { get; set; }
+		}
+		public List<Entry> Entries { get; private set; }
+
+		public SttsBoxNode()
+		{
+			Entries = new List<Entry>();
+		}
+	}
+
 	class SampleEntryNode : BoxNode
 	{
 		public byte[] Reserved { get; private set; }

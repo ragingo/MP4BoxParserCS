@@ -24,8 +24,8 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			//const string fileName = @"I:\Development\Data\Video\mp4_h264_aac.mp4";
-			const string fileName = @"D:\data\video\mp4_h264_aac.mp4";
+			string[] fileNames = { @"I:\Development\Data\Video\mp4_h264_aac.mp4", @"D:\data\video\mp4_h264_aac.mp4" };
+			string fileName = fileNames.First(f => File.Exists(f));
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
@@ -68,23 +68,7 @@ namespace mp4_parse_test1
 				let stsd = stbl.Children.First(box => box.Type == BoxType.stsd) as StsdBoxNode
 				let mp4a = stsd.Children.First(box => box.Type == BoxType.mp4a) as Mp4AudioSampleEntryNode
 				let esds = mp4a.Children.First(box => box.Type == BoxType.esds) as ESDescriptorBoxNode
-
-				let stts = stbl.Children.First(box => box.Type == BoxType.stts)
-
-				let DecodingTimeToSampleBoxInfo = new
-				{
-					Dummy = fs.Seek(stts.Offset, SeekOrigin.Begin),
-					Dummy2 = fs.Seek(stts.Offset + 8 + 4, SeekOrigin.Begin),
-					Entries =
-						from ent in Enumerable.Range(0, (int)br.ReadUInt32())
-						select new
-						{
-							_Index = ent+1,
-							SampleCount = fs.Seek(stts.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 0), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-							SampleDelta = fs.Seek(stts.Offset + 8 + 4 + 4 + (ent * 4 * 2 + 4), SeekOrigin.Begin) != 0 ? br.ReadUInt32() : 0,
-						}
-				}
-
+				let stts = stbl.Children.First(box => box.Type == BoxType.stts) as SttsBoxNode
 				let stsc = stbl.Children.First(box => box.Type == BoxType.stsc)
 
 				let SampleToChunkBoxInfo = new
@@ -106,17 +90,17 @@ namespace mp4_parse_test1
 				}
 
 				select new {
-					Mp4aBoxInfo = esds,
-					DecodingTimeToSampleBoxInfo = DecodingTimeToSampleBoxInfo,
+					esds = esds,
+					stts = stts,
 					SampleToChunkBoxInfo = SampleToChunkBoxInfo,
 				};
 
 			foreach (var item in audio)
 			{
 				Console.WriteLine(item);
-				foreach (var item2 in item.DecodingTimeToSampleBoxInfo.Entries)
+				foreach (var item2 in item.stts.Entries.Select((x,i) => new { Index = i+1, Entry = x }))
 				{
-					Console.WriteLine(item2);
+					Console.WriteLine("index:{0:#,0}, count:{1:#,0}, delta:{2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
 				}
 				foreach (var item2 in item.SampleToChunkBoxInfo.Entries)
 				{
