@@ -422,11 +422,11 @@ namespace mp4_parse_test1
 
 	class ESDescriptorBoxNode : FullBoxNode
 	{
-		public ES_Descriptor ES { get; set; }
+		public ESDescriptor ES { get; set; }
 
 		public ESDescriptorBoxNode()
 		{
-			ES = new ES_Descriptor();
+			ES = new ESDescriptor();
 		}
 	}
 

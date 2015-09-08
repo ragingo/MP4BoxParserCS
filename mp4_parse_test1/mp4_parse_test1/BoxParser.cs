@@ -182,13 +182,13 @@ namespace mp4_parse_test1
 			newSibling.ES.Tag = (DescriptorTag)reader.ReadByte();
 			reader.ReadBytes(3); // 0x80 * 3
 			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
-			newSibling.ES.ES_ID = reader.ReadUInt16();
+			newSibling.ES.ESID = reader.ReadUInt16();
 			newSibling.ES.StreamPriority = reader.ReadByte();
 
 			newSibling.ES.DecConfigDescr.Tag = (DescriptorTag)reader.ReadByte();
 			reader.ReadBytes(3); // 0x80 * 3
 			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
-			newSibling.ES.DecConfigDescr.ObjectTypeIndication = reader.ReadByte();
+			newSibling.ES.DecConfigDescr.ObjectTypeIndication = (ObjectType)reader.ReadByte();
 			reader.ReadBytes(1); // DecConfigDescr.StreamType + DecConfigDescr.UpStream + DecConfigDescr.Reserved
 			reader.ReadBytes(3); // DecConfigDescr.BufferSizeDB
 			newSibling.ES.DecConfigDescr.MaxBitrate = reader.ReadUInt32();

@@ -102,9 +102,15 @@ namespace mp4_parse_test1
 		}
 	}
 
+	// http://www.mp4ra.org/object.html
+	public enum ObjectType : byte
+	{
+
+	}
+
 	public class DecoderConfigDescriptor : BaseDescriptor
 	{
-		public byte ObjectTypeIndication { get; set; }
+		public ObjectType ObjectTypeIndication { get; set; }
 		public byte StreamType { get; set; } // 6 bits
 		public byte UpStream { get; set; } // 1 bit
 		public byte Reserved { get; set; } // 1 bit
@@ -266,17 +272,17 @@ namespace mp4_parse_test1
 		}
 	}
 
-	public class ES_Descriptor : BaseDescriptor
+	public class ESDescriptor : BaseDescriptor
 	{
-		public UInt16 ES_ID { get; set; }
+		public UInt16 ESID { get; set; }
 		public byte StreamDependenceFlag { get; set; } // 1 bit
-		public byte URL_Flag { get; set; } // 1 bit
-		public byte OCRstreamFlag { get; set; } // 1 bit
+		public byte UrlFlag { get; set; } // 1 bit
+		public byte OcrStreamFlag { get; set; } // 1 bit
 		public byte StreamPriority { get; set; } // 5 bits
-		public UInt16 DependsOn_ES_ID { get; set; } // StreamDependenceFlag が 0以外 の場合のみ存在する
-		public byte URLlength { get; set; } // URL_Flag が 0以外 の場合のみ存在する
-		public string URLstring { get; set; } // URL_Flag が 0以外 の場合のみ存在する
-		public UInt16 OCR_ES_Id { get; set; } // OCRstreamFlag  が 0以外 の場合のみ存在する
+		public UInt16 DependsOnESID { get; set; } // StreamDependenceFlag が 0以外 の場合のみ存在する
+		public byte UrlLength { get; set; } // URL_Flag が 0以外 の場合のみ存在する
+		public string UrlString { get; set; } // URL_Flag が 0以外 の場合のみ存在する
+		public UInt16 OcrESID { get; set; } // OCRstreamFlag  が 0以外 の場合のみ存在する
 		public DecoderConfigDescriptor DecConfigDescr { get; set; }
 		public SLConfigDescriptor SlConfigDescr { get; set; }
 		public IPI_DescrPointer[] IpiPtr { get; set; }
@@ -287,7 +293,7 @@ namespace mp4_parse_test1
 		public RegistrationDescriptor[] RegDescr { get; set; }
 		public ExtensionDescriptor[] ExtDescr { get; set; }
 
-		public ES_Descriptor()
+		public ESDescriptor()
 		{
 			Tag = DescriptorTag.ES_DescrTag;
 			DecConfigDescr = new DecoderConfigDescriptor();
