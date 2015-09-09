@@ -9,25 +9,33 @@ namespace mp4_parse_test1
 {
 	class BoxParser
 	{
-		public List<Box> Parse(BinaryReader2 reader)
+		private BinaryReader2 _reader;
+
+		public BoxParser(BinaryReader2 reader)
 		{
-			return GetBoxes(reader, null);
+			_reader = reader;
 		}
 
-		private List<Box> GetBoxes(BinaryReader2 reader, Box parent)
+		public IEnumerable<Box> Parse()
+		{
+			return GetBoxes(null);
+		}
+
+		private List<Box> GetBoxes(Box parent)
 		{
 			var boxes = new List<Box>();
 
-			while (reader.BaseStream.Position < reader.BaseStream.Length)
+			while (_reader.BaseStream.Position < _reader.BaseStream.Length)
 			{
-				UInt32 boxSize = reader.ReadUInt32();
-				BoxType boxType = (BoxType)reader.ReadUInt32();
+				UInt32 boxSize = _reader.ReadUInt32();
+				BoxType boxType = (BoxType)_reader.ReadUInt32();
 
-				var sibling = BoxUtils.CreateInstance(boxType);
-				sibling.Offset = reader.BaseStream.Position - 4 * 2;
+				var sibling = BoxUtil.CreateInstance(boxType);
+				sibling.Offset = _reader.BaseStream.Position - 4 * 2;
 				sibling.Size = boxSize;
 				sibling.Type = boxType;
 				sibling.Parent = parent;
+				boxes.Add(sibling);
 
 				switch (boxType)
 				{
@@ -35,54 +43,52 @@ namespace mp4_parse_test1
 				case BoxType.mdia:
 				case BoxType.dinf:
 				case BoxType.udta:
-					boxes.Add(sibling);
-					sibling.Children.AddRange(GetBoxes(reader, sibling));
+					ParseDefaultParentBox(sibling);
 					break;
 				case BoxType.ftyp:
-					boxes.Add(ParseFtyp(reader, sibling));
+					ParseFtyp(sibling);
 					break;
 				case BoxType.moov:
-					boxes.Add(ParseMoov(reader, sibling));
+					ParseMoov(sibling);
 					break;
 				case BoxType.mvhd:
-					boxes.Add(ParseMvhd(reader, sibling));
+					ParseMvhd(sibling);
 					break;
 				case BoxType.hdlr:
-					boxes.Add(ParseHdlr(reader, sibling));
+					ParseHdlr(sibling);
 					break;
 				case BoxType.minf:
-					boxes.Add(ParseMinf(reader, sibling));
+					ParseMinf(sibling);
 					break;
 				case BoxType.dref:
-					boxes.Add(ParseDref(reader, sibling));
+					ParseDref(sibling);
 					break;
 				case BoxType.stbl:
-					boxes.Add(ParseStbl(reader, sibling));
+					ParseStbl(sibling);
 					break;
 				case BoxType.stts:
-					boxes.Add(ParseStts(reader, sibling));
+					ParseStts(sibling);
 					break;
 				case BoxType.stsc:
-					boxes.Add(ParseStsc(reader, sibling));
+					ParseStsc(sibling);
 					break;
 				case BoxType.stsz:
-					boxes.Add(ParseStsz(reader, sibling));
+					ParseStsz(sibling);
 					break;
 				case BoxType.stsd:
-					boxes.Add(ParseStsd(reader, sibling));
+					ParseStsd(sibling);
 					break;
 				case BoxType.avc1:
-					boxes.Add(ParseAvc1(reader, sibling));
+					ParseAvc1(sibling);
 					break;
 				case BoxType.mp4a:
-					boxes.Add(ParseMp4a(reader, sibling));
+					ParseMp4a(sibling);
 					break;
 				case BoxType.esds:
-					boxes.Add(ParseEsds(reader, sibling));
+					ParseEsds(sibling);
 					break;
 				default:
-					boxes.Add(sibling);
-					reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
+					_reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
 				}
 
@@ -96,198 +102,182 @@ namespace mp4_parse_test1
 			return boxes;
 		}
 
-		// File Type Box
-		private Box ParseFtyp(BinaryReader2 reader, Box sibling)
+		private void ParseDefaultParentBox(Box sibling)
 		{
-			var newSibling = sibling.As<FtypBox>();
-			newSibling.MajorBrand = reader.ReadUInt32();
-			newSibling.MinorVersion = reader.ReadUInt32();
+			sibling.Children.AddRange(GetBoxes(sibling));
+		}
 
-			while (newSibling.Offset + newSibling.Size != reader.BaseStream.Position)
+		// File Type Box
+		private void ParseFtyp(Box sibling)
+		{
+			var newSibling = sibling as FtypBox;
+			newSibling.MajorBrand = _reader.ReadUInt32();
+			newSibling.MinorVersion = _reader.ReadUInt32();
+
+			while (newSibling.Offset + newSibling.Size != _reader.BaseStream.Position)
 			{
-				newSibling.CompatibleBrands.Add((Brand)reader.ReadUInt32());
+				newSibling.CompatibleBrands.Add((Brand)_reader.ReadUInt32());
 			}
-
-			return newSibling;
 		}
 
 		// Movie Box
-		private Box ParseMoov(BinaryReader2 reader, Box sibling)
+		private void ParseMoov(Box sibling)
 		{
-			sibling.Children.AddRange(GetBoxes(reader, sibling));
-			return sibling;
+			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Movie Header Box
-		private Box ParseMvhd(BinaryReader2 reader, Box sibling)
+		private void ParseMvhd(Box sibling)
 		{
 			var newSibling = sibling as MvhdBox;
-			newSibling.Version = reader.ReadByte();
-			newSibling.Flags = reader.ReadUInt24();
+			newSibling.Version = _reader.ReadByte();
+			newSibling.Flags = _reader.ReadUInt24();
 			if (newSibling.Version == 1)
 			{
-				newSibling.CreationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(reader.ReadUInt64());
-				newSibling.ModificationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(reader.ReadUInt64());
-				newSibling.TimeScale = reader.ReadUInt32();
-				newSibling.Duration = reader.ReadUInt64();
+				newSibling.CreationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(_reader.ReadUInt64());
+				newSibling.ModificationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(_reader.ReadUInt64());
+				newSibling.TimeScale = _reader.ReadUInt32();
+				newSibling.Duration = _reader.ReadUInt64();
 			}
 			else
 			{
-				newSibling.CreationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(reader.ReadUInt32());
-				newSibling.ModificationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(reader.ReadUInt32());
-				newSibling.TimeScale = reader.ReadUInt32();
-				newSibling.Duration = reader.ReadUInt32();
+				newSibling.CreationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(_reader.ReadUInt32());
+				newSibling.ModificationTime = (new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)).AddSeconds(_reader.ReadUInt32());
+				newSibling.TimeScale = _reader.ReadUInt32();
+				newSibling.Duration = _reader.ReadUInt32();
 			}
-			newSibling.Rate = (Double)(reader.ReadUInt32() >> 16);
-			newSibling.Volume = (Single)(reader.ReadInt16() >> 8);
-			reader.ReadBytes(2); // reserved1: bit(16)
-			reader.ReadBytes(4 * 2); // reserved2: unsigned int(32) [2]
-			reader.ReadBytes(4 * 9); // matrix: template int(32) [9]
-			reader.ReadBytes(4 * 6); // pre_defined: bit(32) [6]
-			newSibling.NextTrackId = reader.ReadUInt32();
-
-			return newSibling;
+			newSibling.Rate = (Double)(_reader.ReadUInt32() >> 16);
+			newSibling.Volume = (Single)(_reader.ReadInt16() >> 8);
+			_reader.ReadBytes(2); // reserved1: bit(16)
+			_reader.ReadBytes(4 * 2); // reserved2: unsigned int(32) [2]
+			_reader.ReadBytes(4 * 9); // matrix: template int(32) [9]
+			_reader.ReadBytes(4 * 6); // pre_defined: bit(32) [6]
+			newSibling.NextTrackId = _reader.ReadUInt32();
 		}
 
 		// Handler Reference Box
-		private Box ParseHdlr(BinaryReader2 reader, Box sibling)
+		private void ParseHdlr(Box sibling)
 		{
-			var newSibling = sibling.As<HdlrBox>();
-			newSibling.Version = reader.ReadByte();
-			newSibling.Flags = reader.ReadUInt24();
-			reader.ReadUInt32(); // pre_defined: usigned int(32)
-			newSibling.HandlerType = StringUtils.FromBinary(reader.ReadUInt32());
-			reader.ReadBytes(4 * 3); // reserved: const unsigned int(32) [3]
+			var newSibling = sibling as HdlrBox;
+			newSibling.Version = _reader.ReadByte();
+			newSibling.Flags = _reader.ReadUInt24();
+			_reader.ReadUInt32(); // pre_defined: usigned int(32)
+			newSibling.HandlerType = StringUtil.FromBinary(_reader.ReadUInt32());
+			_reader.ReadBytes(4 * 3); // reserved: const unsigned int(32) [3]
 
 			StringBuilder sb = new StringBuilder();
 			char c;
-			while((c = reader.ReadChar()) != '\0')
+			while((c = _reader.ReadChar()) != '\0')
 			{
 				sb.Append(c);
 			}
 			newSibling.Name = sb.ToString();
-
-			return newSibling;
 		}
 
 		// Media Information Box
-		private Box ParseMinf(BinaryReader2 reader, Box sibling)
+		private void ParseMinf(Box sibling)
 		{
-			var newSibling = sibling.As<MinfBox>();
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
-			return newSibling;
+			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Data Reference Box
-		private Box ParseDref(BinaryReader2 reader, Box sibling)
+		private void ParseDref(Box sibling)
 		{
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			reader.ReadUInt32();// entries
-			sibling.Children.AddRange(GetBoxes(reader, sibling));
-
-			return sibling;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			_reader.ReadUInt32();// entries
+			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Sample Table Box
-		private Box ParseStbl(BinaryReader2 reader, Box sibling)
+		private void ParseStbl(Box sibling)
 		{
-			var newSibling = sibling.As<StblBox>();
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
-			return newSibling;
+			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Decoding Time to Sample Box
-		private Box ParseStts(BinaryReader2 reader, Box sibling)
+		private void ParseStts(Box sibling)
 		{
-			var newSibling = sibling.As<SttsBox>();
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			newSibling.EntryCount = reader.ReadUInt32();
+			var newSibling = sibling as SttsBox;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.EntryCount = _reader.ReadUInt32();
 
 			for (int i=0; i<newSibling.EntryCount; i++)
 			{
 				var entry = new SttsBox.Entry();
-				entry.SampleCount = reader.ReadUInt32();
-				entry.SampleDelta = reader.ReadUInt32();
+				entry.SampleCount = _reader.ReadUInt32();
+				entry.SampleDelta = _reader.ReadUInt32();
 				newSibling.Entries.Add(entry);
 			}
-			return newSibling;
 		}
 
 		// Sample To Chunk Box
-		private Box ParseStsc(BinaryReader2 reader, Box sibling)
+		private void ParseStsc(Box sibling)
 		{
-			var newSibling = sibling.As<StscBox>();
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			newSibling.EntryCount = reader.ReadUInt32();
+			var newSibling = sibling as StscBox;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.EntryCount = _reader.ReadUInt32();
 
 			for (int i = 0; i < newSibling.EntryCount; i++)
 			{
 				var entry = new StscBox.Entry();
-				entry.FirstChunk = reader.ReadUInt32();
-				entry.SamplesPerChunk = reader.ReadUInt32();
-				entry.SampleDescriptionIndex = reader.ReadUInt32();
+				entry.FirstChunk = _reader.ReadUInt32();
+				entry.SamplesPerChunk = _reader.ReadUInt32();
+				entry.SampleDescriptionIndex = _reader.ReadUInt32();
 				newSibling.Entries.Add(entry);
 			}
-			return newSibling;
 		}
 
 		// Sample Size Box
-		private Box ParseStsz(BinaryReader2 reader, Box sibling)
+		private void ParseStsz(Box sibling)
 		{
-			var newSibling = sibling.As<StszBox>();
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			newSibling.SampleSize = reader.ReadUInt32();
-			newSibling.SampleCount = reader.ReadUInt32();
+			var newSibling = sibling as StszBox;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.SampleSize = _reader.ReadUInt32();
+			newSibling.SampleCount = _reader.ReadUInt32();
 
 			if (newSibling.SampleSize == 0)
 			{
 				for (int i = 0; i < newSibling.SampleCount; i++)
 				{
 					var entry = new StszBox.Entry();
-					entry.Size = reader.ReadUInt32();
+					entry.Size = _reader.ReadUInt32();
 					newSibling.Entries.Add(entry);
 				}
 			}
-
-			return newSibling;
 		}
 
 		// Sample Description Box
-		private Box ParseStsd(BinaryReader2 reader, Box sibling)
+		private void ParseStsd(Box sibling)
 		{
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			var newSibling = sibling.As<StsdBox>();
-			newSibling.SampleEntries = reader.ReadUInt32();
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
-
-			return newSibling;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			var newSibling = sibling as StsdBox;
+			newSibling.SampleEntries = _reader.ReadUInt32();
+			newSibling.Children.AddRange(GetBoxes(newSibling));
 		}
 
 		// 8.5.1. p32 AudioSampleEntry
-		private Box ParseMp4a(BinaryReader2 reader, Box sibling)
+		private void ParseMp4a(Box sibling)
 		{
-			var newSibling = sibling.As<Mp4AudioSampleEntry>();
-			reader.BaseStream.Seek(6 + 2, SeekOrigin.Current); // SampleEntry
-			reader.BaseStream.Seek(4 * 2, SeekOrigin.Current); // reserved
-			newSibling.ChannelCount = reader.ReadUInt16();
-			newSibling.SampleSize = reader.ReadUInt16();
-			reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
-			newSibling.SampleRate = reader.ReadUInt32() >> 16; // 16.16 hi.lo
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
-
-			return newSibling;
+			var newSibling = sibling as Mp4AudioSampleEntry;
+			_reader.BaseStream.Seek(6 + 2, SeekOrigin.Current); // SampleEntry
+			_reader.BaseStream.Seek(4 * 2, SeekOrigin.Current); // reserved
+			newSibling.ChannelCount = _reader.ReadUInt16();
+			newSibling.SampleSize = _reader.ReadUInt16();
+			_reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
+			newSibling.SampleRate = _reader.ReadUInt32() >> 16; // 16.16 hi.lo
+			newSibling.Children.AddRange(GetBoxes(newSibling));
 		}
 
-		private Box ParseEsds(BinaryReader2 reader, Box sibling)
+		private void ParseEsds(Box sibling)
 		{
-			var newSibling = sibling.As<ESDescriptorBox>();
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			newSibling.ES.Tag = (DescriptorTag)reader.ReadByte();
-			reader.ReadBytes(3); // 0x80 * 3
-			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
-			newSibling.ES.ESID = reader.ReadUInt16();
+			var newSibling = sibling as ESDescriptorBox;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.ES.Tag = (DescriptorTag)_reader.ReadByte();
+			_reader.ReadBytes(3); // 0x80 * 3
+			_reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
+			newSibling.ES.ESID = _reader.ReadUInt16();
 
-			byte data1 = reader.ReadByte();
+			byte data1 = _reader.ReadByte();
 			newSibling.ES.StreamDependenceFlag = (byte)((data1 & 0x80) >> 7);
 			newSibling.ES.UrlFlag              = (byte)((data1 & 0x40) >> 6);
 			newSibling.ES.OcrStreamFlag        = (byte)((data1 & 0x20) >> 5);
@@ -296,35 +286,35 @@ namespace mp4_parse_test1
 			// TODO: 動作未確認
 			if (newSibling.ES.StreamDependenceFlag == 1)
 			{
-				newSibling.ES.DependsOnESID = reader.ReadUInt16();
+				newSibling.ES.DependsOnESID = _reader.ReadUInt16();
 			}
 
 			// TODO: 動作未確認
 			if (newSibling.ES.UrlFlag == 1)
 			{
-				newSibling.ES.UrlLength = reader.ReadByte();
-				newSibling.ES.UrlString = Encoding.UTF8.GetString(reader.ReadBytes(newSibling.ES.UrlLength));
+				newSibling.ES.UrlLength = _reader.ReadByte();
+				newSibling.ES.UrlString = Encoding.UTF8.GetString(_reader.ReadBytes(newSibling.ES.UrlLength));
 			}
 
 			// TODO: 動作未確認
 			if (newSibling.ES.OcrStreamFlag == 1)
 			{
-				newSibling.ES.OcrESID = reader.ReadUInt16();
+				newSibling.ES.OcrESID = _reader.ReadUInt16();
 			}
 
-			newSibling.ES.DecConfigDescr.Tag = (DescriptorTag)reader.ReadByte();
-			reader.ReadBytes(3); // 0x80 * 3
-			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
-			newSibling.ES.DecConfigDescr.ObjectTypeIndication = (ObjectType)reader.ReadByte();
+			newSibling.ES.DecConfigDescr.Tag = (DescriptorTag)_reader.ReadByte();
+			_reader.ReadBytes(3); // 0x80 * 3
+			_reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
+			newSibling.ES.DecConfigDescr.ObjectTypeIndication = (ObjectType)_reader.ReadByte();
 
-			byte data2 = reader.ReadByte();
+			byte data2 = _reader.ReadByte();
 			newSibling.ES.DecConfigDescr.StreamType = (byte)((data2 & 0xfc) >> 2);
 			newSibling.ES.DecConfigDescr.UpStream   = (byte)((data2 & 0x02) >> 1);
 			newSibling.ES.DecConfigDescr.Reserved   = (byte)((data2 & 0x01) >> 0);
 
-			newSibling.ES.DecConfigDescr.BufferSizeDB = reader.ReadUInt24();
-			newSibling.ES.DecConfigDescr.MaxBitrate = reader.ReadUInt32();
-			newSibling.ES.DecConfigDescr.AvgBitrate = reader.ReadUInt32();
+			newSibling.ES.DecConfigDescr.BufferSizeDB = _reader.ReadUInt24();
+			newSibling.ES.DecConfigDescr.MaxBitrate = _reader.ReadUInt32();
+			newSibling.ES.DecConfigDescr.AvgBitrate = _reader.ReadUInt32();
 
 			// TODO: "Audio Decoder Specific Info"(AudioSpecificConfig) の IF は ISO_IEC_14496-3 参照
 			// TODO: まずは AudioSpecificConfig を定義する
@@ -333,30 +323,29 @@ namespace mp4_parse_test1
 			// TODO: ...
 
 			// TODO: 動作確認の為、BOX末尾へシーク
-			reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);
-
-			return newSibling;
+			_reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);
 		}
 
 		// 8.5.1. p31 VisualSampleEntry
-		private Box ParseAvc1(BinaryReader2 reader, Box sibling)
+		private void ParseAvc1(Box sibling)
 		{
-			var newSibling = sibling.As<VisualSampleEntry>();
-			reader.BaseStream.Seek(6, SeekOrigin.Current); // reserved
-			newSibling.DataReferenceIndex = reader.ReadUInt16();
-			reader.BaseStream.Seek(2 + 2 + 4 * 3, SeekOrigin.Current); // pre_defined + reserved + predefined
-			newSibling.Width = reader.ReadUInt16();
-			newSibling.Height = reader.ReadUInt16();
-			newSibling.HorizontalResolution = reader.ReadUInt32() >> 16;
-			newSibling.VerticalResolution = reader.ReadUInt32() >> 16;
-			reader.BaseStream.Seek(4, SeekOrigin.Current); // reserved
-			newSibling.FrameCount = (ushort)(reader.ReadUInt16() >> 8);
-			newSibling.CompressorName = Encoding.ASCII.GetString(reader.ReadBytes(32));
-			newSibling.Depth = (ushort)(reader.ReadUInt16() >> 8);
-			reader.BaseStream.Seek(2, SeekOrigin.Current); // pre_defined
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
+			var newSibling = sibling as VisualSampleEntry;
+			_reader.BaseStream.Seek(6, SeekOrigin.Current); // reserved
+			newSibling.DataReferenceIndex = _reader.ReadUInt16();
+			_reader.BaseStream.Seek(2 + 2 + 4 * 3, SeekOrigin.Current); // pre_defined + reserved + predefined
+			newSibling.Width = _reader.ReadUInt16();
+			newSibling.Height = _reader.ReadUInt16();
+			newSibling.HorizontalResolution = _reader.ReadUInt32() >> 16;
+			newSibling.VerticalResolution = _reader.ReadUInt32() >> 16;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // reserved
+			newSibling.FrameCount = (ushort)(_reader.ReadUInt16() >> 8);
 
-			return newSibling;
+			byte[] data = _reader.ReadBytes(32).Reverse().Select(x => x == '\0' ? (byte)' ' : x).ToArray();
+			newSibling.CompressorName = Encoding.ASCII.GetString(data).Trim();
+
+			newSibling.Depth = (ushort)(_reader.ReadUInt16() >> 8);
+			_reader.BaseStream.Seek(2, SeekOrigin.Current); // pre_defined
+			newSibling.Children.AddRange(GetBoxes(newSibling));
 		}
 	}
 }

@@ -8,7 +8,7 @@ namespace mp4_parse_test1
 {
 	class Program
 	{
-		static void DumpBoxTree(List<Box> nodes, int level = 0)
+		static void DumpBoxTree(IEnumerable<Box> nodes, int level = 0)
 		{
 			foreach (var node in nodes)
 			{
@@ -30,17 +30,18 @@ namespace mp4_parse_test1
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader2(fs, true))
 			{
-				var boxes = new BoxParser().Parse(br);
+				var parser = new BoxParser(br);
+				var boxes = parser.Parse();
 
-				DumpBoxTree(boxes);
-				ShowHandlers(fs, br, boxes);
-				//ShowAudioInfo(fs, br, nodes);
+				//DumpBoxTree(boxes);
+				//ShowHandlers(fs, br, boxes);
+				ShowAudioInfo(fs, br, boxes);
 
 				return;
 			}
 		}
 
-		private static void ShowHandlers(FileStream fs, BinaryReader2 br, List<Box> boxes)
+		private static void ShowHandlers(FileStream fs, BinaryReader2 br, IEnumerable<Box> boxes)
 		{
 			var result =
 				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
@@ -52,7 +53,7 @@ namespace mp4_parse_test1
 			result.ToList().ForEach(Console.WriteLine);
 		}
 
-		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, List<Box> boxes)
+		private static void ShowAudioInfo(FileStream fs, BinaryReader2 br, IEnumerable<Box> boxes)
 		{
 			var audio =
 				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
@@ -90,7 +91,7 @@ namespace mp4_parse_test1
 				}
 				foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
 				{
-					Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
+					//Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
 				}
 			}
 		}

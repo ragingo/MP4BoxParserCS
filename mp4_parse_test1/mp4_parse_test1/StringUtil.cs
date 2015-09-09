@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace mp4_parse_test1
 {
-	public static class StringUtils
+	public static class StringUtil
 	{
 		public static string FromBinary(UInt32 binary)
 		{

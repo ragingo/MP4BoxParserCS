@@ -287,7 +287,7 @@ namespace mp4_parse_test1
 		mp42 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('2' << 0),
 	}
 
-	public static class BoxUtils
+	public static class BoxUtil
 	{
 		private static readonly Dictionary<BoxType, Type> ClassMapping =
 			new Dictionary<BoxType, Type> {
@@ -306,6 +306,7 @@ namespace mp4_parse_test1
 				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
 				{ BoxType.esds, typeof(ESDescriptorBox) },
+				{ BoxType.avc1, typeof(VisualSampleEntry) },
 			};
 		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();
 
@@ -342,7 +343,7 @@ namespace mp4_parse_test1
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.Append(StringUtils.FromBinary((uint)Type));
+			sb.Append(StringUtil.FromBinary((uint)Type));
 			sb.AppendFormat(" {{ offset:{0:#,0}, size:{1:#,0} }}", Offset, Size);
 			return sb.ToString();
 		}
