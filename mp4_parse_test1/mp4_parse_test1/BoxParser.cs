@@ -287,16 +287,49 @@ namespace mp4_parse_test1
 			reader.ReadBytes(3); // 0x80 * 3
 			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
 			newSibling.ES.ESID = reader.ReadUInt16();
-			newSibling.ES.StreamPriority = reader.ReadByte();
+
+			byte data1 = reader.ReadByte();
+			newSibling.ES.StreamDependenceFlag = (byte)((data1 & 0x80) >> 7);
+			newSibling.ES.UrlFlag              = (byte)((data1 & 0x40) >> 6);
+			newSibling.ES.OcrStreamFlag        = (byte)((data1 & 0x20) >> 5);
+			newSibling.ES.StreamPriority       = (byte)((data1 & 0x1f) >> 0);
+
+			// TODO: 動作未確認
+			if (newSibling.ES.StreamDependenceFlag == 1)
+			{
+				newSibling.ES.DependsOnESID = reader.ReadUInt16();
+			}
+
+			// TODO: 動作未確認
+			if (newSibling.ES.UrlFlag == 1)
+			{
+				newSibling.ES.UrlLength = reader.ReadByte();
+				newSibling.ES.UrlString = Encoding.UTF8.GetString(reader.ReadBytes(newSibling.ES.UrlLength));
+			}
+
+			// TODO: 動作未確認
+			if (newSibling.ES.OcrStreamFlag == 1)
+			{
+				newSibling.ES.OcrESID = reader.ReadUInt16();
+			}
 
 			newSibling.ES.DecConfigDescr.Tag = (DescriptorTag)reader.ReadByte();
 			reader.ReadBytes(3); // 0x80 * 3
 			reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
 			newSibling.ES.DecConfigDescr.ObjectTypeIndication = (ObjectType)reader.ReadByte();
-			reader.ReadBytes(1); // DecConfigDescr.StreamType + DecConfigDescr.UpStream + DecConfigDescr.Reserved
-			reader.ReadBytes(3); // DecConfigDescr.BufferSizeDB
+
+			byte data2 = reader.ReadByte();
+			newSibling.ES.DecConfigDescr.StreamType = (byte)((data2 & 0xfc) >> 2);
+			newSibling.ES.DecConfigDescr.UpStream   = (byte)((data2 & 0x02) >> 1);
+			newSibling.ES.DecConfigDescr.Reserved   = (byte)((data2 & 0x01) >> 0);
+
+			newSibling.ES.DecConfigDescr.BufferSizeDB = reader.ReadUInt24();
 			newSibling.ES.DecConfigDescr.MaxBitrate = reader.ReadUInt32();
 			newSibling.ES.DecConfigDescr.AvgBitrate = reader.ReadUInt32();
+
+			// TODO: "Audio Decoder Specific Info"(AudioSpecificConfig) の IF は ISO_IEC_14496-3 参照
+			// TODO: まずは AudioSpecificConfig を定義する
+			//newSibling.ES.DecConfigDescr.DecoderSpecificInfos[0] = new 
 
 			// TODO: ...
 

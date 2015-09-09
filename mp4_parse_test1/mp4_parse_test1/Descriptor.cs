@@ -124,7 +124,7 @@ namespace mp4_parse_test1
 	// http://www.mp4ra.org/object.html
 	public enum ObjectType : byte
 	{
-
+		Mpeg4Audio = 0x40
 	}
 
 	public class DecoderConfigDescriptor : BaseDescriptor
