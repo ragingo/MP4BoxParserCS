@@ -23,7 +23,7 @@ namespace mp4_parse_test1
 				UInt32 boxSize = reader.ReadUInt32();
 				BoxType boxType = (BoxType)reader.ReadUInt32();
 
-				var sibling = new Box();
+				var sibling = BoxUtils.CreateInstance(boxType);
 				sibling.Offset = reader.BaseStream.Position - 4 * 2;
 				sibling.Size = boxSize;
 				sibling.Type = boxType;
@@ -114,15 +114,14 @@ namespace mp4_parse_test1
 		// Movie Box
 		private Box ParseMoov(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<MoovBox>();
-			newSibling.Children.AddRange(GetBoxes(reader, newSibling));
-			return newSibling;
+			sibling.Children.AddRange(GetBoxes(reader, sibling));
+			return sibling;
 		}
 
 		// Movie Header Box
 		private Box ParseMvhd(BinaryReader2 reader, Box sibling)
 		{
-			var newSibling = sibling.As<MvhdBox>();
+			var newSibling = sibling as MvhdBox;
 			newSibling.Version = reader.ReadByte();
 			newSibling.Flags = reader.ReadUInt24();
 			if (newSibling.Version == 1)

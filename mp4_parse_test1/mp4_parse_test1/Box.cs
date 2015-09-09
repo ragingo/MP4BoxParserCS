@@ -287,6 +287,43 @@ namespace mp4_parse_test1
 		mp42 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('2' << 0),
 	}
 
+	public static class BoxUtils
+	{
+		private static readonly Dictionary<BoxType, Type> ClassMapping =
+			new Dictionary<BoxType, Type> {
+				{ BoxType.Unknown, typeof(Box) },
+				{ BoxType.ftyp, typeof(FtypBox) },
+				{ BoxType.moov, typeof(MoovBox) },
+				{ BoxType.mvhd, typeof(MvhdBox) },
+				{ BoxType.hdlr, typeof(HdlrBox) },
+				{ BoxType.minf, typeof(MinfBox) },
+				{ BoxType.stbl, typeof(StblBox) },
+				{ BoxType.stsd, typeof(StsdBox) },
+				{ BoxType.stts, typeof(SttsBox) },
+				{ BoxType.stsc, typeof(StscBox) },
+				{ BoxType.stsz, typeof(StszBox) },
+				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
+				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
+				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
+				{ BoxType.esds, typeof(ESDescriptorBox) },
+			};
+		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();
+
+		public static Box CreateInstance(BoxType type)
+		{
+			var pair = ClassMapping.FirstOrDefault(x => x.Key == type);
+
+			if (DefaultValue.Equals(pair))
+			{
+				return new Box();
+			}
+
+			var instance = Activator.CreateInstance(pair.Value) as Box;
+
+			return instance;
+		}
+	}
+
 	public class Box
 	{
 		public long Offset { get; set; }
@@ -321,6 +358,7 @@ namespace mp4_parse_test1
 			return Children.FirstOrDefault(b => b.Type == type);
 		}
 
+		[Obsolete("BoxUtils.CreateInstance(BoxType) へ移行する")]
 		public T As<T>()
 			where T : Box, new()
 		{
