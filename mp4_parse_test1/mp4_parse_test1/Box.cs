@@ -295,6 +295,7 @@ namespace mp4_parse_test1
 				{ BoxType.ftyp, typeof(FtypBox) },
 				{ BoxType.moov, typeof(MoovBox) },
 				{ BoxType.mvhd, typeof(MvhdBox) },
+				{ BoxType.mdia, typeof(MdiaBox) },
 				{ BoxType.hdlr, typeof(HdlrBox) },
 				{ BoxType.minf, typeof(MinfBox) },
 				{ BoxType.stbl, typeof(StblBox) },
@@ -302,6 +303,7 @@ namespace mp4_parse_test1
 				{ BoxType.stts, typeof(SttsBox) },
 				{ BoxType.stsc, typeof(StscBox) },
 				{ BoxType.stsz, typeof(StszBox) },
+				{ BoxType.stco, typeof(StcoBox) },
 				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
 				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
@@ -421,6 +423,14 @@ namespace mp4_parse_test1
 		}
 	}
 
+	// 8.4. Media Box
+	public class MdiaBox : Box
+	{
+		public MdiaBox()
+		{
+		}
+	}
+
 	public class HdlrBox : FullBox
 	{
 		public string HandlerType { get; set; }
@@ -503,6 +513,23 @@ namespace mp4_parse_test1
 		public List<Entry> Entries { get; private set; }
 
 		public StszBox()
+		{
+			Entries = new List<Entry>();
+		}
+	}
+
+	// 8.7.5. Chunk Offset Box
+	public class StcoBox : FullBox
+	{
+		public UInt32 EntryCount { get; set; }
+
+		public class Entry
+		{
+			public UInt32 ChunkOffset { get; set; }
+		}
+		public List<Entry> Entries { get; private set; }
+
+		public StcoBox()
 		{
 			Entries = new List<Entry>();
 		}

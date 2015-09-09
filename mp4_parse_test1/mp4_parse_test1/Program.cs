@@ -62,7 +62,7 @@ namespace mp4_parse_test1
 				let hdlr = mdia.GetChild<HdlrBox>()
 				where hdlr.HandlerType == HandlerTypes.Sound
 
-				let minf = mdia.GetChild(BoxType.minf)
+				let minf = mdia.GetChild<MinfBox>()
 				let stbl = minf.GetChild<StblBox>()
 				let stsd = stbl.GetChild<StsdBox>()
 				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
@@ -70,12 +70,20 @@ namespace mp4_parse_test1
 				let stts = stbl.GetChild<SttsBox>()
 				let stsc = stbl.GetChild<StscBox>()
 				let stsz = stbl.GetChild<StszBox>()
+				let stco = stbl.GetChild<StcoBox>()
 
 				select new {
 					esds = esds,
 					stts = stts,
 					stsc = stsc,
 					stsz = stsz,
+					stco = stco,
+					// TODO: Audio抽出 よくわからない
+					//Test1 =
+					//	from chunk_entry_index in Enumerable.Range(0, (int)stsc.EntryCount)
+					//	from chunk_index in Enumerable.Range((int)stsc.Entries[chunk_entry_index].FirstChunk, (int)stco.EntryCount)
+					//	from sample_to_chunk_entry_index in Enumerable.Range(0, (int)stsc.EntryCount)
+					//	select stsc.Entries[sample_to_chunk_entry_index].SamplesPerChunk
 				};
 
 			foreach (var item in audio)

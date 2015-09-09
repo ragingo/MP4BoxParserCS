@@ -39,8 +39,10 @@ namespace mp4_parse_test1
 
 				switch (boxType)
 				{
+				case BoxType.moov:
 				case BoxType.trak:
 				case BoxType.mdia:
+				case BoxType.minf:
 				case BoxType.dinf:
 				case BoxType.udta:
 					ParseDefaultParentBox(sibling);
@@ -48,17 +50,11 @@ namespace mp4_parse_test1
 				case BoxType.ftyp:
 					ParseFtyp(sibling);
 					break;
-				case BoxType.moov:
-					ParseMoov(sibling);
-					break;
 				case BoxType.mvhd:
 					ParseMvhd(sibling);
 					break;
 				case BoxType.hdlr:
 					ParseHdlr(sibling);
-					break;
-				case BoxType.minf:
-					ParseMinf(sibling);
 					break;
 				case BoxType.dref:
 					ParseDref(sibling);
@@ -74,6 +70,9 @@ namespace mp4_parse_test1
 					break;
 				case BoxType.stsz:
 					ParseStsz(sibling);
+					break;
+				case BoxType.stco:
+					ParseStco(sibling);
 					break;
 				case BoxType.stsd:
 					ParseStsd(sibling);
@@ -118,12 +117,6 @@ namespace mp4_parse_test1
 			{
 				newSibling.CompatibleBrands.Add((Brand)_reader.ReadUInt32());
 			}
-		}
-
-		// Movie Box
-		private void ParseMoov(Box sibling)
-		{
-			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Movie Header Box
@@ -172,12 +165,6 @@ namespace mp4_parse_test1
 				sb.Append(c);
 			}
 			newSibling.Name = sb.ToString();
-		}
-
-		// Media Information Box
-		private void ParseMinf(Box sibling)
-		{
-			sibling.Children.AddRange(GetBoxes(sibling));
 		}
 
 		// Data Reference Box
@@ -243,6 +230,21 @@ namespace mp4_parse_test1
 					entry.Size = _reader.ReadUInt32();
 					newSibling.Entries.Add(entry);
 				}
+			}
+		}
+
+		// Chunk Offset Box
+		private void ParseStco(Box sibling)
+		{
+			var newSibling = sibling as StcoBox;
+			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
+			newSibling.EntryCount = _reader.ReadUInt32();
+
+			for (int i = 0; i < newSibling.EntryCount; i++)
+			{
+				var entry = new StcoBox.Entry();
+				entry.ChunkOffset = _reader.ReadUInt32();
+				newSibling.Entries.Add(entry);
 			}
 		}
 
