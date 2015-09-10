@@ -319,11 +319,16 @@ namespace mp4_parse_test1
 			box.ES.DecConfigDescr.MaxBitrate = _reader.ReadUInt32();
 			box.ES.DecConfigDescr.AvgBitrate = _reader.ReadUInt32();
 
-			// TODO: "Audio Decoder Specific Info"(AudioSpecificConfig) の IF は ISO_IEC_14496-3 参照
-			// TODO: まずは AudioSpecificConfig を定義する
-			//newSibling.ES.DecConfigDescr.DecoderSpecificInfos[0] = new 
+			var descriptor = DescriptorUtil.CreateInstance(box.ES.DecConfigDescr.ObjectTypeIndication);
+			box.ES.DecConfigDescr.DecoderSpecificInfos[0] = descriptor;
 
 			// TODO: ...
+			if (descriptor is AudioSpecificConfig)
+			{
+				var audio = descriptor as AudioSpecificConfig;
+				//audio.AudioObjectType = 0;
+				//audio.SamplingFrequencyIndex = 0;
+			}
 
 			// TODO: 動作確認の為、BOX末尾へシーク
 			_reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);

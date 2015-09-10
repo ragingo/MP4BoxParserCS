@@ -86,7 +86,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	public abstract class DecoderSpecificInfo : BaseDescriptor
+	public /*abstract*/ class DecoderSpecificInfo : BaseDescriptor
 	{
 		public DecoderSpecificInfo()
 		{
@@ -340,5 +340,41 @@ namespace mp4_parse_test1
 			RegDescr = new RegistrationDescriptor[2];
 			ExtDescr = new ExtensionDescriptor[256];
 		}
+	}
+
+	// ISO_IEC_14496-3 1.6.2.1.
+	// TODO: 実装中
+	public class AudioSpecificConfig : DecoderSpecificInfo
+	{
+		public byte AudioObjectType { get; set; } // 5 bits uimsbf
+		public byte SamplingFrequencyIndex { get; set; } // 4 bits bslbf
+
+		public AudioSpecificConfig()
+		{
+		}
+	}
+
+	public static class DescriptorUtil
+	{
+		private static readonly Dictionary<ObjectType, Type> ClassMapping =
+			new Dictionary<ObjectType, Type> {
+				{ ObjectType.Mpeg4Audio, typeof(AudioSpecificConfig) },
+			};
+		private static readonly KeyValuePair<ObjectType, Type> DefaultValue = new KeyValuePair<ObjectType, Type>();
+
+		public static DecoderSpecificInfo CreateInstance(ObjectType type)
+		{
+			var pair = ClassMapping.FirstOrDefault(x => x.Key == type);
+
+			if (DefaultValue.Equals(pair))
+			{
+				return new DecoderSpecificInfo();
+			}
+
+			var instance = Activator.CreateInstance(pair.Value) as DecoderSpecificInfo;
+
+			return instance;
+		}
+
 	}
 }
