@@ -322,12 +322,18 @@ namespace mp4_parse_test1
 			var descriptor = DescriptorUtil.CreateInstance(box.ES.DecConfigDescr.ObjectTypeIndication);
 			box.ES.DecConfigDescr.DecoderSpecificInfos[0] = descriptor;
 
+			descriptor.Tag = (DescriptorTag)_reader.ReadByte();
+			_reader.ReadBytes(3); // 0x80 * 3
+			_reader.ReadBytes(1); // TOOD: TagSize・・・？ツールにはそう表示されていた・・・
+
 			// TODO: ...
 			if (descriptor is AudioSpecificConfig)
 			{
 				var audio = descriptor as AudioSpecificConfig;
-				//audio.AudioObjectType = 0;
-				//audio.SamplingFrequencyIndex = 0;
+
+				byte[] bits = _reader.ReadBytes(10); // TODO: 5bits + 4bits とかで読み難い・・・
+				audio.AudioObjectType = (AudioObjectType)((bits[0] & 0xf8) >> 3);
+				audio.SamplingFrequencyIndex = (byte)(((bits[0] & 0x07) << 1) | ((bits[1] & 0x80) >> 7)); // TODO: バグ
 			}
 
 			// TODO: 動作確認の為、BOX末尾へシーク
