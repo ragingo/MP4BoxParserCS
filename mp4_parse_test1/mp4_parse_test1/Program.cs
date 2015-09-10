@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using mp4_parse_test1.Boxes;
 
 namespace mp4_parse_test1
 {
@@ -33,9 +34,9 @@ namespace mp4_parse_test1
 				var parser = new BoxParser(br);
 				var boxes = parser.Parse();
 
-				//DumpBoxTree(boxes);
-				//ShowHandlers(fs, br, boxes);
-				ShowAudioInfo(fs, br, boxes);
+				DumpBoxTree(boxes);
+				ShowHandlers(fs, br, boxes);
+				//ShowAudioInfo(fs, br, boxes);
 
 				return;
 			}
@@ -47,7 +48,7 @@ namespace mp4_parse_test1
 				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
 				let mdia = box1.GetChild(BoxType.mdia)
-				let hdlr = mdia.GetChild<HdlrBox>()
+				let hdlr = mdia.GetChild<HandlerBox>()
 				select hdlr;
 
 			result.ToList().ForEach(Console.WriteLine);
@@ -59,12 +60,12 @@ namespace mp4_parse_test1
 				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
 				where box1.Type == BoxType.trak
 				let mdia = box1.GetChild(BoxType.mdia)
-				let hdlr = mdia.GetChild<HdlrBox>()
-				where hdlr.HandlerType == HandlerTypes.Sound
+				let hdlr = mdia.GetChild<HandlerBox>()
+				where hdlr.HandlerType == HandlerType.Sound
 
-				let minf = mdia.GetChild<MinfBox>()
-				let stbl = minf.GetChild<StblBox>()
-				let stsd = stbl.GetChild<StsdBox>()
+				let minf = mdia.GetChild<MediaInformationBox>()
+				let stbl = minf.GetChild<SampleTableBox>()
+				let stsd = stbl.GetChild<SampleDescriptionBox>()
 				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
 				let esds = mp4a.GetChild<ESDescriptorBox>()
 				let stts = stbl.GetChild<SttsBox>()

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mp4_parse_test1
+namespace mp4_parse_test1.Boxes
 {
 	// http://www.mp4ra.org/atoms.html
 	public enum BoxType : uint
@@ -65,7 +65,7 @@ namespace mp4_parse_test1
 		ipmc = ('i' << 24) | ('p' << 16) | ('m' << 8) | ('c' << 0),
 		ipro = ('i' << 24) | ('p' << 16) | ('r' << 8) | ('o' << 0),
 		iref = ('i' << 24) | ('r' << 16) | ('e' << 8) | ('f' << 0),
-		jP   = ('j' << 24) | ('P' << 16) | (' ' << 8) | (' ' << 0),
+		jP = ('j' << 24) | ('P' << 16) | (' ' << 8) | (' ' << 0),
 		jp2c = ('j' << 24) | ('p' << 16) | ('2' << 8) | ('c' << 0),
 		jp2h = ('j' << 24) | ('p' << 16) | ('2' << 8) | ('h' << 0),
 		jp2i = ('j' << 24) | ('p' << 16) | ('2' << 8) | ('i' << 0),
@@ -113,7 +113,7 @@ namespace mp4_parse_test1
 		pnot = ('p' << 24) | ('n' << 16) | ('o' << 8) | ('t' << 0),
 		prft = ('p' << 24) | ('r' << 16) | ('f' << 8) | ('t' << 0),
 		pssh = ('p' << 24) | ('s' << 16) | ('s' << 8) | ('h' << 0),
-		res  = ('r' << 24) | ('e' << 16) | ('s' << 8) | (' ' << 0),
+		res = ('r' << 24) | ('e' << 16) | ('s' << 8) | (' ' << 0),
 		resc = ('r' << 24) | ('e' << 16) | ('s' << 8) | ('c' << 0),
 		resd = ('r' << 24) | ('e' << 16) | ('s' << 8) | ('d' << 0),
 		rinf = ('r' << 24) | ('i' << 16) | ('n' << 8) | ('f' << 0),
@@ -173,16 +173,17 @@ namespace mp4_parse_test1
 		uinf = ('u' << 24) | ('i' << 16) | ('n' << 8) | ('f' << 0),
 		UITS = ('U' << 24) | ('I' << 16) | ('T' << 8) | ('S' << 0),
 		ulst = ('u' << 24) | ('l' << 16) | ('s' << 8) | ('t' << 0),
-		url  = ('u' << 24) | ('r' << 16) | ('l' << 8) | (' ' << 0),
+		url = ('u' << 24) | ('r' << 16) | ('l' << 8) | (' ' << 0),
 		uuid = ('u' << 24) | ('u' << 16) | ('i' << 8) | ('d' << 0),
 		vmhd = ('v' << 24) | ('m' << 16) | ('h' << 8) | ('d' << 0),
 		vwdi = ('v' << 24) | ('w' << 16) | ('d' << 8) | ('i' << 0),
-		xml  = ('x' << 24) | ('m' << 16) | ('l' << 8) | (' ' << 0),
+		xml = ('x' << 24) | ('m' << 16) | ('l' << 8) | (' ' << 0),
 
 		// TODO: どう扱うべきか分からないから一旦追加
 		avc1 = ('a' << 24) | ('v' << 16) | ('c' << 8) | ('1' << 0),
 		mp4a = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('a' << 0),
 		esds = ('e' << 24) | ('s' << 16) | ('d' << 8) | ('s' << 0),
+		btrt = ('b' << 24) | ('t' << 16) | ('r' << 8) | ('t' << 0),
 	}
 
 	// http://www.mp4ra.org/codecs.html
@@ -214,7 +215,7 @@ namespace mp4_parse_test1
 		encs = ('e' << 24) | ('n' << 16) | ('c' << 8) | ('s' << 0),
 		enct = ('e' << 24) | ('n' << 16) | ('c' << 8) | ('t' << 0),
 		encv = ('e' << 24) | ('n' << 16) | ('c' << 8) | ('v' << 0),
-		fdp  = ('f' << 24) | ('d' << 16) | ('p' << 8) | (' ' << 0),
+		fdp = ('f' << 24) | ('d' << 16) | ('p' << 8) | (' ' << 0),
 		g719 = ('g' << 24) | ('7' << 16) | ('1' << 8) | ('9' << 0),
 		g726 = ('g' << 24) | ('7' << 16) | ('2' << 8) | ('6' << 0),
 		hvc1 = ('h' << 24) | ('v' << 16) | ('c' << 8) | ('1' << 0),
@@ -240,12 +241,12 @@ namespace mp4_parse_test1
 		Opus = ('O' << 24) | ('p' << 16) | ('u' << 8) | ('s' << 0),
 		pm2t = ('p' << 24) | ('m' << 16) | ('2' << 8) | ('t' << 0),
 		prtp = ('p' << 24) | ('r' << 16) | ('t' << 8) | ('p' << 0),
-		raw  = ('r' << 24) | ('a' << 16) | ('w' << 8) | (' ' << 0),
+		raw = ('r' << 24) | ('a' << 16) | ('w' << 8) | (' ' << 0),
 		resv = ('r' << 24) | ('e' << 16) | ('s' << 8) | ('v' << 0),
 		rm2t = ('r' << 24) | ('m' << 16) | ('2' << 8) | ('t' << 0),
 		rrtp = ('r' << 24) | ('r' << 16) | ('t' << 8) | ('p' << 0),
 		rsrp = ('r' << 24) | ('s' << 16) | ('r' << 8) | ('p' << 0),
-		rtp  = ('r' << 24) | ('t' << 16) | ('p' << 8) | (' ' << 0),
+		rtp = ('r' << 24) | ('t' << 16) | ('p' << 8) | (' ' << 0),
 		s263 = ('s' << 24) | ('2' << 16) | ('6' << 8) | ('3' << 0),
 		samr = ('s' << 24) | ('a' << 16) | ('m' << 8) | ('r' << 0),
 		sawb = ('s' << 24) | ('a' << 16) | ('w' << 8) | ('b' << 0),
@@ -269,13 +270,14 @@ namespace mp4_parse_test1
 		wvtt = ('w' << 24) | ('v' << 16) | ('t' << 8) | ('t' << 0),
 	}
 
-	public static class HandlerTypes
+	public enum HandlerType : uint
 	{
-		public const string Sound = "soun";
-		public const string Video = "vide";
-		public const string Hint = "hint";
-		public const string Metadata = "meta";
-		public const string AuxiliaryVideo = "auxv";
+		Unknown = uint.MaxValue,
+		Sound          = ('s' << 24) | ('o' << 16) | ('u' << 8) | ('n' << 0),
+		Video          = ('v' << 24) | ('i' << 16) | ('d' << 8) | ('e' << 0),
+		Hint           = ('h' << 24) | ('i' << 16) | ('n' << 8) | ('t' << 0),
+		Metadata       = ('m' << 24) | ('e' << 16) | ('t' << 8) | ('a' << 0),
+		AuxiliaryVideo = ('a' << 24) | ('u' << 16) | ('x' << 8) | ('v' << 0),
 	}
 
 	// http://www.ftyps.com/
@@ -285,330 +287,5 @@ namespace mp4_parse_test1
 		isom = ('i' << 24) | ('s' << 16) | ('o' << 8) | ('m' << 0),
 		mp41 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('1' << 0),
 		mp42 = ('m' << 24) | ('p' << 16) | ('4' << 8) | ('2' << 0),
-	}
-
-	public static class BoxUtil
-	{
-		private static readonly Dictionary<BoxType, Type> ClassMapping =
-			new Dictionary<BoxType, Type> {
-				{ BoxType.Unknown, typeof(Box) },
-				{ BoxType.ftyp, typeof(FtypBox) },
-				{ BoxType.moov, typeof(MoovBox) },
-				{ BoxType.mvhd, typeof(MvhdBox) },
-				{ BoxType.mdia, typeof(MdiaBox) },
-				{ BoxType.hdlr, typeof(HdlrBox) },
-				{ BoxType.minf, typeof(MinfBox) },
-				{ BoxType.stbl, typeof(StblBox) },
-				{ BoxType.stsd, typeof(StsdBox) },
-				{ BoxType.stts, typeof(SttsBox) },
-				{ BoxType.stsc, typeof(StscBox) },
-				{ BoxType.stsz, typeof(StszBox) },
-				{ BoxType.stco, typeof(StcoBox) },
-				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
-				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
-				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
-				{ BoxType.esds, typeof(ESDescriptorBox) },
-				{ BoxType.avc1, typeof(VisualSampleEntry) },
-			};
-		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();
-
-		public static Box CreateInstance(BoxType type)
-		{
-			var pair = ClassMapping.FirstOrDefault(x => x.Key == type);
-
-			if (DefaultValue.Equals(pair))
-			{
-				return new Box();
-			}
-
-			var instance = Activator.CreateInstance(pair.Value) as Box;
-
-			return instance;
-		}
-	}
-
-	public class Box
-	{
-		public long Offset { get; set; }
-		public uint Size { get; set; }
-		public BoxType Type { get; set; }
-		public Box Parent { get; set; }
-		public List<Box> Children { get; private set; }
-
-		public Box()
-		{
-			Children = new List<Box>();
-		}
-
-		public override string ToString()
-		{
-			StringBuilder sb = new StringBuilder();
-			sb.Append(StringUtil.FromBinary((uint)Type));
-			sb.AppendFormat(" {{ offset:{0:#,0}, size:{1:#,0} }}", Offset, Size);
-			return sb.ToString();
-		}
-
-		public T GetChild<T>()
-			where T : Box, new()
-		{
-			return Children.FirstOrDefault(b => b.GetType() == typeof(T)) as T;
-		}
-
-		public Box GetChild(BoxType type)
-		{
-			return Children.FirstOrDefault(b => b.Type == type);
-		}
-
-		public bool HasChild()
-		{
-			return Children.Count > 0;
-		}
-	}
-
-	public class FullBox : Box
-	{
-		public byte Version { get; set; }
-		public UInt32 Flags { get; set; }
-
-		public FullBox()
-		{
-		}
-	}
-
-	// 4.3 File Type Box
-	public class FtypBox : Box
-	{
-		public UInt32 MajorBrand { get; set; }
-		public UInt32 MinorVersion { get; set; }
-		public List<Brand> CompatibleBrands { get; private set; }
-
-		public FtypBox()
-		{
-			CompatibleBrands = new List<Brand>();
-		}
-	}
-
-	// 8.2.1 Movie Box
-	public class MoovBox : Box
-	{
-		public MoovBox()
-		{
-		}
-	}
-
-	// 8.2.2 Movie Header Box
-	public class MvhdBox : FullBox
-	{
-		public DateTime CreationTime { get; set; }
-		public DateTime ModificationTime { get; set; }
-		public UInt32 TimeScale { get; set; }
-		public UInt64 Duration { get; set; }
-		public Double Rate { get; set; }
-		public Single Volume { get; set; }
-		public UInt32 NextTrackId { get; set; }
-
-		public MvhdBox()
-		{
-		}
-	}
-
-	// 8.4. Media Box
-	public class MdiaBox : Box
-	{
-		public MdiaBox()
-		{
-		}
-	}
-
-	public class HdlrBox : FullBox
-	{
-		public string HandlerType { get; set; }
-		public string Name { get; set; }
-
-		public HdlrBox()
-		{
-		}
-	}
-
-	public class MinfBox : Box
-	{
-		public MinfBox()
-		{
-		}
-	}
-
-
-	public class StblBox : Box
-	{
-		public StblBox()
-		{
-		}
-	}
-
-	public class StsdBox : Box
-	{
-		public uint SampleEntries { get; set; }
-
-		public StsdBox()
-		{
-		}
-	}
-
-	public class SttsBox : FullBox
-	{
-		public UInt32 EntryCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 SampleCount { get; set; }
-			public UInt32 SampleDelta { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public SttsBox()
-		{
-			Entries = new List<Entry>();
-		}
-	}
-
-	public class StscBox : FullBox
-	{
-		public UInt32 EntryCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 FirstChunk { get; set; }
-			public UInt32 SamplesPerChunk { get; set; }
-			public UInt32 SampleDescriptionIndex { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public StscBox()
-		{
-			Entries = new List<Entry>();
-		}
-	}
-
-	// 8.7.3.2 Sample Size Box
-	public class StszBox : FullBox
-	{
-		public UInt32 SampleSize { get; set; }
-		public UInt32 SampleCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 Size { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public StszBox()
-		{
-			Entries = new List<Entry>();
-		}
-	}
-
-	// 8.7.5. Chunk Offset Box
-	public class StcoBox : FullBox
-	{
-		public UInt32 EntryCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 ChunkOffset { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public StcoBox()
-		{
-			Entries = new List<Entry>();
-		}
-	}
-
-	public class SampleEntry : Box
-	{
-		public byte[] Reserved { get; private set; }
-		public UInt16 DataReferenceIndex { get; set; }
-
-		public SampleEntry()
-		{
-			Reserved = new byte[6];
-		}
-	}
-
-	public class VisualSampleEntry : SampleEntry
-	{
-		public UInt16 PreDefined { get; set; }
-		public UInt16 Reserved2 { get; set; }
-		public UInt32[] PreDefined2 { get; set; }
-		public UInt16 Width { get; set; }
-		public UInt16 Height { get; set; }
-		public UInt32 HorizontalResolution { get; set; }
-		public UInt32 VerticalResolution { get; set; }
-		public UInt32 Reserved3 { get; set; }
-		public UInt16 FrameCount { get; set; }
-		public string CompressorName { get; set; }
-		public UInt16 Depth { get; set; }
-		public Int32 PreDefined3 { get; set; }
-
-		public VisualSampleEntry()
-		{
-			PreDefined2 = new UInt32[3];
-			HorizontalResolution = 0x00480000 >> 16;
-			VerticalResolution = 0x00480000 >> 16;
-			FrameCount = 1;
-			Depth = 0x0018 >> 8;
-			PreDefined3 = -1;
-		}
-	}
-
-	public class AudioSampleEntry : SampleEntry
-	{
-		public new UInt32[] Reserved { get; set; }
-		public UInt16 ChannelCount { get; set; }
-		public UInt16 SampleSize { get; set; }
-		public UInt16 PreDefined { get; set; }
-		public UInt16 Reserved2 { get; set; }
-		public UInt32 SampleRate { get; set; }
-
-		public AudioSampleEntry()
-		{
-			Reserved = new UInt32[2];
-			ChannelCount = 2;
-			SampleSize = 16;
-		}
-	}
-
-	public class ESDescriptorBox : FullBox
-	{
-		public ESDescriptor ES { get; set; }
-
-		public ESDescriptorBox()
-		{
-			ES = new ESDescriptor();
-		}
-	}
-
-	// mp4v
-	public class Mp4VisualSampleEntry : VisualSampleEntry
-	{
-		public Mp4VisualSampleEntry()
-		{
-		}
-	}
-
-	// mp4a
-	public class Mp4AudioSampleEntry : AudioSampleEntry
-	{
-		public Mp4AudioSampleEntry()
-		{
-		}
-	}
-
-	// mp4s
-	public class MpegSampleEntry : SampleEntry
-	{
-		public MpegSampleEntry()
-		{
-		}
 	}
 }

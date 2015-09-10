@@ -44,7 +44,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BinaryReader.cs" />
-    <Compile Include="Box.cs" />
+    <Compile Include="Boxes\BitRateBox.cs" />
+    <Compile Include="Boxes\Box.cs" />
+    <Compile Include="Boxes\BoxUtil.cs" />
+    <Compile Include="Boxes\FileTypeBox.cs" />
+    <Compile Include="Boxes\FreeSpaceBox.cs" />
+    <Compile Include="Boxes\FullBox.cs" />
+    <Compile Include="Boxes\HandlerBox.cs" />
+    <Compile Include="Boxes\HintMediaHeaderBox.cs" />
+    <Compile Include="Boxes\MediaBox.cs" />
+    <Compile Include="Boxes\MediaDataBox.cs" />
+    <Compile Include="Boxes\MediaHeaderBox.cs" />
+    <Compile Include="Boxes\MediaInformationBox.cs" />
+    <Compile Include="Boxes\MovieBox.cs" />
+    <Compile Include="Boxes\MovieHeaderBox.cs" />
+    <Compile Include="Boxes\NullMediaHeaderBox.cs" />
+    <Compile Include="Boxes\ProgressiveDownloadInfoBox.cs" />
+    <Compile Include="Boxes\SampleDescriptionBox.cs" />
+    <Compile Include="Boxes\SampleEntries.cs" />
+    <Compile Include="Boxes\SampleTableBox.cs" />
+    <Compile Include="Boxes\SoundMediaHeaderBox.cs" />
+    <Compile Include="Boxes\TrackBox.cs" />
+    <Compile Include="Boxes\TrackGroupBox.cs" />
+    <Compile Include="Boxes\TrackHeaderBox.cs" />
+    <Compile Include="Boxes\TrackReferenceBox.cs" />
+    <Compile Include="Boxes\Types.cs" />
+    <Compile Include="Boxes\VideoMediaHeaderBox.cs" />
     <Compile Include="BoxParser.cs" />
     <Compile Include="Descriptor.cs" />
     <Compile Include="Program.cs" />

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using mp4_parse_test1.Boxes;
 
 namespace mp4_parse_test1
 {
@@ -29,14 +30,12 @@ namespace mp4_parse_test1
 			{
 				UInt32 boxSize = _reader.ReadUInt32();
 				BoxType boxType = (BoxType)_reader.ReadUInt32();
-				const int PRELOAD_LENGTH = 4 * 2;
 
 				var sibling = BoxUtil.CreateInstance(boxType);
-				sibling.Offset = _reader.BaseStream.Position - PRELOAD_LENGTH;
-				sibling.Size = boxSize;
-				sibling.Type = boxType;
 				sibling.Parent = parent;
 				boxes.Add(sibling);
+
+				ParseBox(sibling, boxSize);
 
 				switch (boxType)
 				{
@@ -88,7 +87,7 @@ namespace mp4_parse_test1
 					ParseEsds(sibling);
 					break;
 				default:
-					_reader.BaseStream.Seek((boxSize - PRELOAD_LENGTH), SeekOrigin.Current);
+					_reader.BaseStream.Seek((boxSize - 4 * 2), SeekOrigin.Current);
 					break;
 				}
 
@@ -102,6 +101,17 @@ namespace mp4_parse_test1
 			return boxes;
 		}
 
+		private void ParseBox(Box sibling, uint boxSize)
+		{
+			sibling.Size = boxSize;
+			sibling.Offset = _reader.BaseStream.Position - 4 * 2;
+
+			if (sibling.Size == 1)
+			{
+				sibling.LargeSize = _reader.ReadUInt64();
+			}
+		}
+
 		private void ParseDefaultParentBox(Box sibling)
 		{
 			sibling.Children.AddRange(GetBoxes(sibling));
@@ -110,7 +120,7 @@ namespace mp4_parse_test1
 		// File Type Box
 		private void ParseFtyp(Box sibling)
 		{
-			var box = sibling as FtypBox;
+			var box = sibling as FileTypeBox;
 			box.MajorBrand = _reader.ReadUInt32();
 			box.MinorVersion = _reader.ReadUInt32();
 
@@ -123,7 +133,7 @@ namespace mp4_parse_test1
 		// Movie Header Box
 		private void ParseMvhd(Box sibling)
 		{
-			var box = sibling as MvhdBox;
+			var box = sibling as MovieHeaderBox;
 			box.Version = _reader.ReadByte();
 			box.Flags = _reader.ReadUInt24();
 			if (box.Version == 1)
@@ -142,22 +152,22 @@ namespace mp4_parse_test1
 			}
 			box.Rate = (Double)(_reader.ReadUInt32() >> 16);
 			box.Volume = (Single)(_reader.ReadInt16() >> 8);
-			_reader.ReadBytes(2); // reserved1: bit(16)
-			_reader.ReadBytes(4 * 2); // reserved2: unsigned int(32) [2]
-			_reader.ReadBytes(4 * 9); // matrix: template int(32) [9]
-			_reader.ReadBytes(4 * 6); // pre_defined: bit(32) [6]
+			box.Reserved = _reader.ReadUInt16();
+			Array.Copy(_reader.ReadBytes(4 * 2), box.Reserved2, box.Reserved2.Length);
+			Array.Copy(_reader.ReadBytes(4 * 9), box.Matrix, box.Matrix.Length);
+			Array.Copy(_reader.ReadBytes(4 * 6), box.PreDefined, box.PreDefined.Length);
 			box.NextTrackId = _reader.ReadUInt32();
 		}
 
 		// Handler Reference Box
 		private void ParseHdlr(Box sibling)
 		{
-			var box = sibling as HdlrBox;
+			var box = sibling as HandlerBox;
 			box.Version = _reader.ReadByte();
 			box.Flags = _reader.ReadUInt24();
-			_reader.ReadUInt32(); // pre_defined: usigned int(32)
-			box.HandlerType = StringUtil.FromBinary(_reader.ReadBytes(4));
-			_reader.ReadBytes(4 * 3); // reserved: const unsigned int(32) [3]
+			box.PreDefined = _reader.ReadUInt32();
+			box.HandlerType = (HandlerType)_reader.ReadUInt32();
+			Array.Copy(_reader.ReadBytes(4 * 3), box.Reserved, box.Reserved.Length);
 
 			StringBuilder sb = new StringBuilder();
 			char c;
@@ -253,8 +263,8 @@ namespace mp4_parse_test1
 		private void ParseStsd(Box sibling)
 		{
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
-			var box = sibling as StsdBox;
-			box.SampleEntries = _reader.ReadUInt32();
+			var box = sibling as SampleDescriptionBox;
+			box.EntryCount = _reader.ReadUInt32();
 			box.Children.AddRange(GetBoxes(box));
 		}
 
