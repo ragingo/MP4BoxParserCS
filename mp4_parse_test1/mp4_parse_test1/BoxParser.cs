@@ -9,9 +9,9 @@ namespace mp4_parse_test1
 {
 	class BoxParser
 	{
-		private BinaryReader2 _reader;
+		private BinaryReader _reader;
 
-		public BoxParser(BinaryReader2 reader)
+		public BoxParser(BinaryReader reader)
 		{
 			_reader = reader;
 		}

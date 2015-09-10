@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BinaryReader2.cs" />
+    <Compile Include="BinaryReader.cs" />
     <Compile Include="Box.cs" />
     <Compile Include="BoxParser.cs" />
     <Compile Include="Descriptor.cs" />

@@ -4,12 +4,12 @@ using System.Text;
 
 namespace mp4_parse_test1
 {
-	class BinaryReader2 : BinaryReader
+	class BinaryReader : System.IO.BinaryReader
 	{
 		private bool _isBigEndian = false;
 		private readonly bool _isNeedReverse;
 
-		public BinaryReader2(Stream input, bool isBigEndian = false)
+		public BinaryReader(Stream input, bool isBigEndian = false)
 			: base(input)
 		{
 			_isBigEndian = isBigEndian;
@@ -24,12 +24,12 @@ namespace mp4_parse_test1
 				_isNeedReverse = false;
 			}
 		}
-		public BinaryReader2(Stream input, Encoding encoding, bool isBigEndian = false)
+		public BinaryReader(Stream input, Encoding encoding, bool isBigEndian = false)
 			: base(input, encoding)
 		{
 			_isBigEndian = isBigEndian;
 		}
-		public BinaryReader2(Stream input, Encoding encoding, bool leaveOpen, bool isBigEndian = false)
+		public BinaryReader(Stream input, Encoding encoding, bool leaveOpen, bool isBigEndian = false)
 			: base(input, encoding, leaveOpen)
 		{
 			_isBigEndian = isBigEndian;
