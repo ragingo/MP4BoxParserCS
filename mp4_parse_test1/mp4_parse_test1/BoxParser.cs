@@ -296,7 +296,7 @@ namespace mp4_parse_test1
 			if (box.ES.UrlFlag == 1)
 			{
 				box.ES.UrlLength = _reader.ReadByte();
-				box.ES.UrlString = Encoding.UTF8.GetString(_reader.ReadBytes(box.ES.UrlLength));
+				box.ES.UrlString = StringUtil.FromBinary(_reader.ReadBytes(box.ES.UrlLength), Encoding.UTF8);
 			}
 
 			// TODO: 動作未確認
