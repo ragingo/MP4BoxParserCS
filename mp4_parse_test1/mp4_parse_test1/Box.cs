@@ -334,8 +334,6 @@ namespace mp4_parse_test1
 		public BoxType Type { get; set; }
 		public Box Parent { get; set; }
 		public List<Box> Children { get; private set; }
-		public int Level { get; set; }
-		public bool IsRoot { get { return Level == 0; } }
 
 		public Box()
 		{
@@ -361,18 +359,9 @@ namespace mp4_parse_test1
 			return Children.FirstOrDefault(b => b.Type == type);
 		}
 
-		[Obsolete("BoxUtils.CreateInstance(BoxType) へ移行する")]
-		public T As<T>()
-			where T : Box, new()
+		public bool HasChild()
 		{
-			var newNode = new T();
-			newNode.Offset = Offset;
-			newNode.Size = Size;
-			newNode.Type = Type;
-			newNode.Parent = Parent;
-			newNode.Children.AddRange(Children);
-			newNode.Level = Level;
-			return newNode;
+			return Children.Count > 0;
 		}
 	}
 
