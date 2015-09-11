@@ -66,6 +66,7 @@
     <Compile Include="Boxes\NullMediaHeaderBox.cs" />
     <Compile Include="Boxes\PixelAspectRatioBox.cs" />
     <Compile Include="Boxes\ProgressiveDownloadInfoBox.cs" />
+    <Compile Include="Boxes\SampleDependencyTypeBox.cs" />
     <Compile Include="Boxes\SampleDescriptionBox.cs" />
     <Compile Include="Boxes\SampleEntries.cs" />
     <Compile Include="Boxes\SampleTableBox.cs" />

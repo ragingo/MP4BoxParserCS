@@ -19,7 +19,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	// TODO: 次に定義するのは、8.6.4 Independent and Disposable Samples Box
+	// TODO: 次に定義するのは、8.6.5 Edit Box
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) Box
