@@ -45,9 +45,9 @@ namespace mp4_parse_test1
 		private static void ShowHandlers(FileStream fs, BinaryReader br, IEnumerable<Box> boxes)
 		{
 			var result =
-				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
+				from box1 in boxes.First(box => box is MovieBox).Children
 				where box1.Type == BoxType.trak
-				let mdia = box1.GetChild(BoxType.mdia)
+				let mdia = box1.GetChild<MediaBox>()
 				let hdlr = mdia.GetChild<HandlerBox>()
 				select hdlr;
 
@@ -57,9 +57,9 @@ namespace mp4_parse_test1
 		private static void ShowAudioInfo(FileStream fs, BinaryReader br, IEnumerable<Box> boxes)
 		{
 			var audio =
-				from box1 in boxes.First(box => box.Type == BoxType.moov).Children
+				from box1 in boxes.First(box => box is MovieBox).Children
 				where box1.Type == BoxType.trak
-				let mdia = box1.GetChild(BoxType.mdia)
+				let mdia = box1.GetChild<MediaBox>()
 				let hdlr = mdia.GetChild<HandlerBox>()
 				where hdlr.HandlerType == HandlerType.Sound
 
