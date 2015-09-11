@@ -18,15 +18,15 @@ namespace mp4_parse_test1.Boxes
 				{ BoxType.minf, typeof(MediaInformationBox) },
 				{ BoxType.stbl, typeof(SampleTableBox) },
 				{ BoxType.stsd, typeof(SampleDescriptionBox) },
-				{ BoxType.stts, typeof(SttsBox) },
+				{ BoxType.stts, typeof(TimeToSampleBox) },
 				{ BoxType.stsc, typeof(StscBox) },
 				{ BoxType.stsz, typeof(StszBox) },
 				{ BoxType.stco, typeof(StcoBox) },
 				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
-				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
+				//{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
 				{ BoxType.esds, typeof(ESDescriptorBox) },
-				{ BoxType.avc1, typeof(VisualSampleEntry) },
+				//{ BoxType.avc1, typeof(VisualSampleEntry) },
 			};
 		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();
 

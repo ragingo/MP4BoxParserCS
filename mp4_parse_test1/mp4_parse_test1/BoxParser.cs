@@ -77,12 +77,12 @@ namespace mp4_parse_test1
 				case BoxType.stsd:
 					ParseStsd(sibling);
 					break;
-				case BoxType.avc1:
-					ParseAvc1(sibling);
-					break;
-				case BoxType.mp4a:
-					ParseMp4a(sibling);
-					break;
+				//case BoxType.avc1:
+				//	ParseAvc1(sibling);
+				//	break;
+				//case BoxType.mp4a:
+				//	ParseMp4a(sibling);
+				//	break;
 				case BoxType.esds:
 					ParseEsds(sibling);
 					break;
@@ -195,13 +195,13 @@ namespace mp4_parse_test1
 		// Decoding Time to Sample Box
 		private void ParseStts(Box sibling)
 		{
-			var box = sibling as SttsBox;
+			var box = sibling as TimeToSampleBox;
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			box.EntryCount = _reader.ReadUInt32();
 
 			for (int i=0; i<box.EntryCount; i++)
 			{
-				var entry = new SttsBox.Entry();
+				var entry = new TimeToSampleBox.Entry();
 				entry.SampleCount = _reader.ReadUInt32();
 				entry.SampleDelta = _reader.ReadUInt32();
 				box.Entries.Add(entry);

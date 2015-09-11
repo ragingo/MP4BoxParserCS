@@ -16,6 +16,10 @@ namespace mp4_parse_test1.Boxes
 		{
 			Reserved = new byte[6];
 		}
+
+		public SampleEntry(SampleEntryCode code) : this((BoxType)(uint)code)
+		{
+		}
 	}
 
 	/// <summary>
@@ -29,6 +33,65 @@ namespace mp4_parse_test1.Boxes
 		public HintSampleEntry(BoxType type) : base(type)
 		{
 			Data = new List<byte>();
+		}
+	}
+
+	/// <summary>
+	/// ISO/IEC 14496-12:2012(E) 8.5.2 Sample Description Box
+	/// MetaDataSampleEntry
+	/// </summary>
+	public class MetaDataSampleEntry : SampleEntry
+	{
+		public MetaDataSampleEntry(BoxType type) : base(type)
+		{
+		}
+		public MetaDataSampleEntry(SampleEntryCode code) : base(code)
+		{
+		}
+	}
+
+	/// <summary>
+	/// ISO/IEC 14496-12:2012(E) 8.5.2 Sample Description Box
+	/// XMLMetaDataSampleEntry
+	/// </summary>
+	public class XMLMetaDataSampleEntry : MetaDataSampleEntry
+	{
+		public string ContentEncoding { get; set; }
+		public string Namespace { get; set; }
+		public string Schemalocation { get; set; }
+		public BitRateBox BitRateBox { get; set; }
+
+		public XMLMetaDataSampleEntry() : base(SampleEntryCode.metx)
+		{
+		}
+	}
+
+	/// <summary>
+	/// ISO/IEC 14496-12:2012(E) 8.5.2 Sample Description Box
+	/// TextMetaDataSampleEntry
+	/// </summary>
+	public class TextMetaDataSampleEntry : MetaDataSampleEntry
+	{
+		public string ContentEncoding { get; set; }
+		public string MimeFormat { get; set; }
+		public BitRateBox BitRateBox { get; set; }
+
+		public TextMetaDataSampleEntry() : base(SampleEntryCode.mett)
+		{
+		}
+	}
+
+	/// <summary>
+	/// ISO/IEC 14496-12:2012(E) 8.5.2 Sample Description Box
+	/// URIMetaSampleEntry
+	/// </summary>
+	public class URIMetaSampleEntry : MetaDataSampleEntry
+	{
+		public URIBox TheLabel { get; set; }
+		public URIInitBox Init { get; set; }
+
+		public URIMetaSampleEntry() : base(BoxType.urim)
+		{
 		}
 	}
 
@@ -50,8 +113,10 @@ namespace mp4_parse_test1.Boxes
 		public string CompressorName { get; set; }
 		public UInt16 Depth { get; set; }
 		public Int32 PreDefined3 { get; set; }
+		public CleanApertureBox Clap { get; set; }
+		public PixelAspectRatioBox Pasp { get; set; }
 
-		public VisualSampleEntry() : base(BoxType.avc1)
+		public VisualSampleEntry(SampleEntryCode code) : base(code)
 		{
 			PreDefined2 = new UInt32[3];
 			HorizontalResolution = 0x00480000 >> 16;
@@ -75,7 +140,7 @@ namespace mp4_parse_test1.Boxes
 		public UInt16 Reserved2 { get; set; }
 		public UInt32 SampleRate { get; set; }
 
-		public AudioSampleEntry(BoxType type) : base(type)
+		public AudioSampleEntry(SampleEntryCode code) : base(code)
 		{
 			Reserved = new UInt32[2];
 			ChannelCount = 2;

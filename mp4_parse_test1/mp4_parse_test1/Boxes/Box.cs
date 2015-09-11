@@ -6,7 +6,6 @@ using mp4_parse_test1.Boxes;
 
 namespace mp4_parse_test1
 {
-
 	public abstract class BoxBase
 	{
 		public UInt32 Size { get; set; }
@@ -19,6 +18,8 @@ namespace mp4_parse_test1
 			_type = type;
 		}
 	}
+
+	// TODO: 次に定義するのは、8.6.3 Shadow Sync Sample Box
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) Box
@@ -61,26 +62,6 @@ namespace mp4_parse_test1
 		}
 	}
 
-
-	/// <summary>
-	/// ISO/IEC 14496-12:2012(E) 
-	/// </summary>
-	public class SttsBox : FullBox
-	{
-		public UInt32 EntryCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 SampleCount { get; set; }
-			public UInt32 SampleDelta { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public SttsBox() : base(BoxType.stts)
-		{
-			Entries = new List<Entry>();
-		}
-	}
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) 
@@ -155,27 +136,27 @@ namespace mp4_parse_test1
 		}
 	}
 
-	//// mp4v
-	//public class Mp4VisualSampleEntry : VisualSampleEntry
-	//{
-	//	public Mp4VisualSampleEntry()
-	//	{
-	//	}
-	//}
-
-	// mp4a
-	public class Mp4AudioSampleEntry : AudioSampleEntry
+	// mp4v
+	public class Mp4VisualSampleEntry : VisualSampleEntry
 	{
-		public Mp4AudioSampleEntry() : base(BoxType.mp4a)
+		public Mp4VisualSampleEntry() : base(SampleEntryCode.mp4v)
 		{
 		}
 	}
 
-	//// mp4s
-	//public class MpegSampleEntry : SampleEntry
-	//{
-	//	public MpegSampleEntry()
-	//	{
-	//	}
-	//}
+	// mp4a
+	public class Mp4AudioSampleEntry : AudioSampleEntry
+	{
+		public Mp4AudioSampleEntry() : base(SampleEntryCode.mp4a)
+		{
+		}
+	}
+
+	// mp4s
+	public class MpegSampleEntry : SampleEntry
+	{
+		public MpegSampleEntry() : base(SampleEntryCode.mp4s)
+		{
+		}
+	}
 }
