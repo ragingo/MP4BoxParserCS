@@ -69,6 +69,7 @@
     <Compile Include="Boxes\SampleDescriptionBox.cs" />
     <Compile Include="Boxes\SampleEntries.cs" />
     <Compile Include="Boxes\SampleTableBox.cs" />
+    <Compile Include="Boxes\ShadowSyncSampleBox.cs" />
     <Compile Include="Boxes\SoundMediaHeaderBox.cs" />
     <Compile Include="Boxes\SyncSampleBox.cs" />
     <Compile Include="Boxes\TimeToSampleBox.cs" />
