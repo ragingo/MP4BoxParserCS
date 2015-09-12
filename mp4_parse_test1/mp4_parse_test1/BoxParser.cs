@@ -9,24 +9,35 @@ using mp4_parse_test1.Descriptors;
 
 namespace mp4_parse_test1
 {
+	class RootBox : Box
+	{
+		public RootBox() : base(BoxType.Unknown)
+		{
+		}
+	}
+
 	class BoxParser
 	{
 		private BinaryReader _reader;
+		private Mp4Container _container;
 
-		public BoxParser(BinaryReader reader)
+		public BoxParser(BinaryReader reader, Mp4Container container)
 		{
 			_reader = reader;
+			_container = container;
 		}
 
-		public IEnumerable<Box> Parse()
+		public void Parse()
 		{
-			return GetBoxes(null);
+			var root = new RootBox();
+
+			ParseBoxes(root);
+
+			_container.Boxes.AddRange(root.Children);
 		}
 
-		private List<Box> GetBoxes(Box parent)
+		private void ParseBoxes(Box parent)
 		{
-			var boxes = new List<Box>();
-
 			while (_reader.BaseStream.Position < _reader.BaseStream.Length)
 			{
 				UInt32 boxSize = _reader.ReadUInt32();
@@ -34,7 +45,7 @@ namespace mp4_parse_test1
 
 				var sibling = BoxUtil.CreateInstance(boxType);
 				sibling.Parent = parent;
-				boxes.Add(sibling);
+				parent.Children.Add(sibling);
 
 				ParseBox(sibling, boxSize);
 
@@ -78,12 +89,12 @@ namespace mp4_parse_test1
 				case BoxType.stsd:
 					ParseStsd(sibling);
 					break;
-				//case BoxType.avc1:
-				//	ParseAvc1(sibling);
-				//	break;
-				//case BoxType.mp4a:
-				//	ParseMp4a(sibling);
-				//	break;
+				case BoxType.avc1:
+					ParseAvc1(sibling);
+					break;
+				case BoxType.mp4a:
+					ParseMp4a(sibling);
+					break;
 				case BoxType.esds:
 					ParseEsds(sibling);
 					break;
@@ -95,11 +106,11 @@ namespace mp4_parse_test1
 				if (parent != null &&
 					parent.Offset + parent.Size == sibling.Offset + sibling.Size)
 				{
-					return boxes;
+					return;
 				}
 			}
 
-			return boxes;
+			return;
 		}
 
 		private void ParseBox(Box sibling, uint boxSize)
@@ -115,7 +126,7 @@ namespace mp4_parse_test1
 
 		private void ParseDefaultParentBox(Box sibling)
 		{
-			sibling.Children.AddRange(GetBoxes(sibling));
+			ParseBoxes(sibling);
 		}
 
 		// File Type Box
@@ -184,13 +195,13 @@ namespace mp4_parse_test1
 		{
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			_reader.ReadUInt32();// entries
-			sibling.Children.AddRange(GetBoxes(sibling));
+			ParseBoxes(sibling);
 		}
 
 		// Sample Table Box
 		private void ParseStbl(Box sibling)
 		{
-			sibling.Children.AddRange(GetBoxes(sibling));
+			ParseBoxes(sibling);
 		}
 
 		// Decoding Time to Sample Box
@@ -266,7 +277,35 @@ namespace mp4_parse_test1
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			var box = sibling as SampleDescriptionBox;
 			box.EntryCount = _reader.ReadUInt32();
-			box.Children.AddRange(GetBoxes(box));
+			ParseBoxes(box);
+
+			//for (int i = 0; i < box.EntryCount; i++)
+			//{
+			//	var entry = new SampleDescriptionBox.Entry();
+			//	var hdlr = box.Parent.Parent.Parent.GetChild<HandlerBox>();
+
+			//	switch (hdlr.HandlerType)
+			//	{
+			//	case HandlerType.Video:
+			//		entry.SampleEntry = new Mp4VisualSampleEntry();
+			//		ParseAvc1(box); // TODO: メソッド名(avc1)は適切かどうか？
+			//		break;
+			//	case HandlerType.Sound:
+			//		entry.SampleEntry = new Mp4AudioSampleEntry();
+			//		ParseMp4a(box);
+			//		break;
+			//	//case HandlerType.Hint:
+			//	//	entry = new HintSampleEntry();
+			//	//	break;
+			//	//case HandlerType.Metadata:
+			//	//	entry = new MetaDataSampleEntry();
+			//	//	break;
+			//	default:
+			//		break;
+			//	}
+
+			//	box.Entries.Add(entry);
+		//}
 		}
 
 		// 8.5.1. p32 AudioSampleEntry
@@ -279,7 +318,7 @@ namespace mp4_parse_test1
 			box.SampleSize = _reader.ReadUInt16();
 			_reader.BaseStream.Seek(2 + 2, SeekOrigin.Current); // pre_defined + reserved
 			box.SampleRate = _reader.ReadUInt32() >> 16; // 16.16 hi.lo
-			box.Children.AddRange(GetBoxes(box));
+			ParseBoxes(box);
 		}
 
 		private void ParseEsds(Box sibling)
@@ -351,7 +390,6 @@ namespace mp4_parse_test1
 			_reader.BaseStream.Seek(sibling.Offset + sibling.Size, SeekOrigin.Begin);
 		}
 
-		// 8.5.1. p31 VisualSampleEntry
 		private void ParseAvc1(Box sibling)
 		{
 			var box = sibling as VisualSampleEntry;
@@ -367,7 +405,7 @@ namespace mp4_parse_test1
 			box.CompressorName = StringUtil.FromBinary(_reader.ReadBytes(32)).Trim();
 			box.Depth = (ushort)(_reader.ReadUInt16() >> 8);
 			_reader.BaseStream.Seek(2, SeekOrigin.Current); // pre_defined
-			box.Children.AddRange(GetBoxes(box));
+			ParseBoxes(box);
 		}
 	}
 }

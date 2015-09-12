@@ -17,7 +17,7 @@ namespace mp4_parse_test1.Boxes
 			Reserved = new byte[6];
 		}
 
-		public SampleEntry(SampleEntryCode code) : this((BoxType)(uint)code)
+		public SampleEntry(SampleEntryCode code) : this((BoxType)code)
 		{
 		}
 	}

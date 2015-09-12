@@ -111,6 +111,7 @@
     <Compile Include="Descriptors\ProfileLevelIndicationIndexDescriptor.cs" />
     <Compile Include="Descriptors\QoS_Descriptor.cs" />
     <Compile Include="Descriptors\RegistrationDescriptor.cs" />
+    <Compile Include="Mp4Container.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Descriptors\SLConfigDescriptor.cs" />

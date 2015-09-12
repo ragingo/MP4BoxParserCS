@@ -22,11 +22,10 @@ namespace mp4_parse_test1.Boxes
 				{ BoxType.stsc, typeof(SampleToChunkBox) },
 				{ BoxType.stsz, typeof(SampleSizeBox) },
 				{ BoxType.stco, typeof(ChunkOffsetBox) },
-				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
-				//{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
-				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
 				{ BoxType.esds, typeof(EsdBox) },
-				//{ BoxType.avc1, typeof(VisualSampleEntry) },
+				{ BoxType.avc1, typeof(Mp4VisualSampleEntry) }, // TODO: とりあえず使っておく
+				{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
+				{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 			};
 		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();
 

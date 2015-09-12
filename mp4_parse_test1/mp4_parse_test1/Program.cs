@@ -29,20 +29,18 @@ namespace mp4_parse_test1
 			string fileName = fileNames.First(f => File.Exists(f));
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-			using (var br = new BinaryReader(fs, true))
 			{
-				var parser = new BoxParser(br);
-				var boxes = parser.Parse();
+				var container = Mp4Container.Parse(fs);
 
-				DumpBoxTree(boxes);
-				ShowHandlers(fs, br, boxes);
-				//ShowAudioInfo(fs, br, boxes);
+				DumpBoxTree(container.Boxes);
+				//ShowHandlers(container.Boxes);
+				//ShowAudioInfo(container.Boxes);
 
 				return;
 			}
 		}
 
-		private static void ShowHandlers(FileStream fs, BinaryReader br, IEnumerable<Box> boxes)
+		private static void ShowHandlers(IEnumerable<Box> boxes)
 		{
 			var result =
 				from box1 in boxes.First(box => box is MovieBox).Children
@@ -54,7 +52,7 @@ namespace mp4_parse_test1
 			result.ToList().ForEach(Console.WriteLine);
 		}
 
-		private static void ShowAudioInfo(FileStream fs, BinaryReader br, IEnumerable<Box> boxes)
+		private static void ShowAudioInfo(IEnumerable<Box> boxes)
 		{
 			var audio =
 				from box1 in boxes.First(box => box is MovieBox).Children
