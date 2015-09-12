@@ -47,6 +47,8 @@
     <Compile Include="Boxes\BitRateBox.cs" />
     <Compile Include="Boxes\Box.cs" />
     <Compile Include="Boxes\BoxUtil.cs" />
+    <Compile Include="Boxes\ChunkLargeOffsetBox.cs" />
+    <Compile Include="Boxes\ChunkOffsetBox.cs" />
     <Compile Include="Boxes\CompactSampleSizeBox.cs" />
     <Compile Include="Boxes\CompositionOffsetBox.cs" />
     <Compile Include="Boxes\CompositionToDecodeBox.cs" />

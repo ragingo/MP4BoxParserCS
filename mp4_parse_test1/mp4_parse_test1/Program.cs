@@ -71,7 +71,7 @@ namespace mp4_parse_test1
 				let stts = stbl.GetChild<TimeToSampleBox>()
 				let stsc = stbl.GetChild<SampleToChunkBox>()
 				let stsz = stbl.GetChild<SampleSizeBox>()
-				let stco = stbl.GetChild<StcoBox>()
+				let stco = stbl.GetChild<ChunkOffsetBox>()
 
 				select new {
 					esds = esds,

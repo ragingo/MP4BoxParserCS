@@ -247,13 +247,13 @@ namespace mp4_parse_test1
 		// Chunk Offset Box
 		private void ParseStco(Box sibling)
 		{
-			var box = sibling as StcoBox;
+			var box = sibling as ChunkOffsetBox;
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			box.EntryCount = _reader.ReadUInt32();
 
 			for (int i = 0; i < box.EntryCount; i++)
 			{
-				var entry = new StcoBox.Entry();
+				var entry = new ChunkOffsetBox.Entry();
 				entry.ChunkOffset = _reader.ReadUInt32();
 				box.Entries.Add(entry);
 			}

@@ -21,7 +21,7 @@ namespace mp4_parse_test1.Boxes
 				{ BoxType.stts, typeof(TimeToSampleBox) },
 				{ BoxType.stsc, typeof(SampleToChunkBox) },
 				{ BoxType.stsz, typeof(SampleSizeBox) },
-				{ BoxType.stco, typeof(StcoBox) },
+				{ BoxType.stco, typeof(ChunkOffsetBox) },
 				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
 				//{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
