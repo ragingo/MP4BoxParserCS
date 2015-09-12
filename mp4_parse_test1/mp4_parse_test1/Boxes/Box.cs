@@ -19,7 +19,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	// TODO: 次に定義するのは、8.7.3.3 Compact Sample Size Box
+	// TODO: 次に定義するのは、8.7.4 Sample To Chunk Box
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) Box
