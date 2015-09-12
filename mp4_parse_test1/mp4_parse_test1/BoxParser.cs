@@ -228,7 +228,7 @@ namespace mp4_parse_test1
 		// Sample Size Box
 		private void ParseStsz(Box sibling)
 		{
-			var box = sibling as StszBox;
+			var box = sibling as SampleSizeBox;
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			box.SampleSize = _reader.ReadUInt32();
 			box.SampleCount = _reader.ReadUInt32();
@@ -237,7 +237,7 @@ namespace mp4_parse_test1
 			{
 				for (int i = 0; i < box.SampleCount; i++)
 				{
-					var entry = new StszBox.Entry();
+					var entry = new SampleSizeBox.Entry();
 					entry.Size = _reader.ReadUInt32();
 					box.Entries.Add(entry);
 				}

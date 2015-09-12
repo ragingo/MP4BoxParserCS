@@ -189,6 +189,7 @@ namespace mp4_parse_test1.Boxes
 		urim = ('u' << 24) | ('r' << 16) | ('i' << 8) | ('m' << 0),
 		pasp = ('p' << 24) | ('a' << 16) | ('s' << 8) | ('p' << 0),
 		clap = ('c' << 24) | ('l' << 16) | ('a' << 8) | ('p' << 0),
+		urn  = ('u' << 24) | ('r' << 16) | ('n' << 8) | (' ' << 0),
 	}
 
 	// http://www.mp4ra.org/codecs.html

@@ -19,7 +19,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	// TODO: 次に定義するのは、8.6.5 Edit Box
+	// TODO: 次に定義するのは、8.7.3.3 Compact Sample Size Box
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) Box
@@ -84,25 +84,6 @@ namespace mp4_parse_test1
 		}
 	}
 
-	/// <summary>
-	/// ISO/IEC 14496-12:2012(E) 
-	/// </summary>
-	public class StszBox : FullBox
-	{
-		public UInt32 SampleSize { get; set; }
-		public UInt32 SampleCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 Size { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public StszBox() : base(BoxType.stsz)
-		{
-			Entries = new List<Entry>();
-		}
-	}
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) 

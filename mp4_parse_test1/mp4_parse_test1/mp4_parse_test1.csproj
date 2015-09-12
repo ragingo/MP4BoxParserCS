@@ -49,9 +49,15 @@
     <Compile Include="Boxes\BoxUtil.cs" />
     <Compile Include="Boxes\CompositionOffsetBox.cs" />
     <Compile Include="Boxes\CompositionToDecodeBox.cs" />
+    <Compile Include="Boxes\DataEntryUrlBox.cs" />
+    <Compile Include="Boxes\DataEntryUrnBox.cs" />
+    <Compile Include="Boxes\DataInformationBox.cs" />
+    <Compile Include="Boxes\DataReferenceBox.cs" />
     <Compile Include="Boxes\DegradationPriorityBox.cs" />
     <Compile Include="Boxes\CleanApertureBox.cs" />
     <Compile Include="Boxes\ColourInformationBox.cs" />
+    <Compile Include="Boxes\EditBox.cs" />
+    <Compile Include="Boxes\EditListBox.cs" />
     <Compile Include="Boxes\FileTypeBox.cs" />
     <Compile Include="Boxes\FreeSpaceBox.cs" />
     <Compile Include="Boxes\FullBox.cs" />
@@ -69,6 +75,7 @@
     <Compile Include="Boxes\SampleDependencyTypeBox.cs" />
     <Compile Include="Boxes\SampleDescriptionBox.cs" />
     <Compile Include="Boxes\SampleEntries.cs" />
+    <Compile Include="Boxes\SampleSizeBox.cs" />
     <Compile Include="Boxes\SampleTableBox.cs" />
     <Compile Include="Boxes\ShadowSyncSampleBox.cs" />
     <Compile Include="Boxes\SoundMediaHeaderBox.cs" />
