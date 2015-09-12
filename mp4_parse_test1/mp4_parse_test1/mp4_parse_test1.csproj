@@ -95,8 +95,25 @@
     <Compile Include="Boxes\VideoMediaHeaderBox.cs" />
     <Compile Include="BoxParser.cs" />
     <Compile Include="Descriptor.cs" />
+    <Compile Include="Descriptors\AudioSpecificConfig.cs" />
+    <Compile Include="Descriptors\DecoderConfigDescriptor.cs" />
+    <Compile Include="Descriptors\DecoderSpecificInfo.cs" />
+    <Compile Include="Descriptors\DescriptorUtil.cs" />
+    <Compile Include="Boxes\ESDBox.cs" />
+    <Compile Include="Descriptors\ESDescriptor.cs" />
+    <Compile Include="Descriptors\ExtensionDescriptor.cs" />
+    <Compile Include="Descriptors\ExtensionProfileLevelDescriptor.cs" />
+    <Compile Include="Descriptors\IPI_DescrPointer.cs" />
+    <Compile Include="Descriptors\IPMP_DescriptorPointer.cs" />
+    <Compile Include="Descriptors\IP_IdentificationDataSet.cs" />
+    <Compile Include="Descriptors\LanguageDescriptor.cs" />
+    <Compile Include="Descriptors\OCI_Descriptor.cs" />
+    <Compile Include="Descriptors\ProfileLevelIndicationIndexDescriptor.cs" />
+    <Compile Include="Descriptors\QoS_Descriptor.cs" />
+    <Compile Include="Descriptors\RegistrationDescriptor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Descriptors\SLConfigDescriptor.cs" />
     <Compile Include="StringUtil.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +122,7 @@
   <ItemGroup>
     <Content Include="memo.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

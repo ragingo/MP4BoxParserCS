@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using mp4_parse_test1.Boxes;
+using mp4_parse_test1.Descriptors;
 
 namespace mp4_parse_test1
 {
@@ -283,7 +284,7 @@ namespace mp4_parse_test1
 
 		private void ParseEsds(Box sibling)
 		{
-			var box = sibling as ESDescriptorBox;
+			var box = sibling as EsdBox;
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			box.ES.Tag = (DescriptorTag)_reader.ReadByte();
 			_reader.ReadBytes(3); // 0x80 * 3

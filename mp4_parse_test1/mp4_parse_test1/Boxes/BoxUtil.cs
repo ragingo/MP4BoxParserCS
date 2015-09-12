@@ -25,7 +25,7 @@ namespace mp4_parse_test1.Boxes
 				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },
 				//{ BoxType.mp4a, typeof(Mp4AudioSampleEntry) },
 				//{ BoxType.mp4s, typeof(MpegSampleEntry) },
-				{ BoxType.esds, typeof(ESDescriptorBox) },
+				{ BoxType.esds, typeof(EsdBox) },
 				//{ BoxType.avc1, typeof(VisualSampleEntry) },
 			};
 		private static readonly KeyValuePair<BoxType, Type> DefaultValue = new KeyValuePair<BoxType, Type>();

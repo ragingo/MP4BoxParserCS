@@ -61,41 +61,4 @@ namespace mp4_parse_test1
 			return Children.Count > 0;
 		}
 	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	public class ESDescriptorBox : FullBox
-	{
-		public ESDescriptor ES { get; set; }
-
-		public ESDescriptorBox() : base(BoxType.esds)
-		{
-			ES = new ESDescriptor();
-		}
-	}
-
-	// mp4v
-	public class Mp4VisualSampleEntry : VisualSampleEntry
-	{
-		public Mp4VisualSampleEntry() : base(SampleEntryCode.mp4v)
-		{
-		}
-	}
-
-	// mp4a
-	public class Mp4AudioSampleEntry : AudioSampleEntry
-	{
-		public Mp4AudioSampleEntry() : base(SampleEntryCode.mp4a)
-		{
-		}
-	}
-
-	// mp4s
-	public class MpegSampleEntry : SampleEntry
-	{
-		public MpegSampleEntry() : base(SampleEntryCode.mp4s)
-		{
-		}
-	}
 }

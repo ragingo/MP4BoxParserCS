@@ -67,7 +67,7 @@ namespace mp4_parse_test1
 				let stbl = minf.GetChild<SampleTableBox>()
 				let stsd = stbl.GetChild<SampleDescriptionBox>()
 				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
-				let esds = mp4a.GetChild<ESDescriptorBox>()
+				let esds = mp4a.GetChild<EsdBox>()
 				let stts = stbl.GetChild<TimeToSampleBox>()
 				let stsc = stbl.GetChild<SampleToChunkBox>()
 				let stsz = stbl.GetChild<SampleSizeBox>()
