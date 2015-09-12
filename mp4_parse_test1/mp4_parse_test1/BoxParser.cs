@@ -211,13 +211,13 @@ namespace mp4_parse_test1
 		// Sample To Chunk Box
 		private void ParseStsc(Box sibling)
 		{
-			var box = sibling as StscBox;
+			var box = sibling as SampleToChunkBox;
 			_reader.BaseStream.Seek(4, SeekOrigin.Current); // FullBox
 			box.EntryCount = _reader.ReadUInt32();
 
 			for (int i = 0; i < box.EntryCount; i++)
 			{
-				var entry = new StscBox.Entry();
+				var entry = new SampleToChunkBox.Entry();
 				entry.FirstChunk = _reader.ReadUInt32();
 				entry.SamplesPerChunk = _reader.ReadUInt32();
 				entry.SampleDescriptionIndex = _reader.ReadUInt32();

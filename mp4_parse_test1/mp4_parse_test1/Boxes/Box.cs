@@ -19,7 +19,7 @@ namespace mp4_parse_test1
 		}
 	}
 
-	// TODO: 次に定義するのは、8.7.4 Sample To Chunk Box
+	// TODO: 次に定義するのは、8.7.5 Chunk Offset Box
 
 	/// <summary>
 	/// ISO/IEC 14496-12:2012(E) Box
@@ -59,28 +59,6 @@ namespace mp4_parse_test1
 		public bool HasChild()
 		{
 			return Children.Count > 0;
-		}
-	}
-
-
-	/// <summary>
-	/// ISO/IEC 14496-12:2012(E) 
-	/// </summary>
-	public class StscBox : FullBox
-	{
-		public UInt32 EntryCount { get; set; }
-
-		public class Entry
-		{
-			public UInt32 FirstChunk { get; set; }
-			public UInt32 SamplesPerChunk { get; set; }
-			public UInt32 SampleDescriptionIndex { get; set; }
-		}
-		public List<Entry> Entries { get; private set; }
-
-		public StscBox() : base(BoxType.stsc)
-		{
-			Entries = new List<Entry>();
 		}
 	}
 

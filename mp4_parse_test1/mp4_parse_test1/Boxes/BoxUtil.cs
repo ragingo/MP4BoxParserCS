@@ -19,7 +19,7 @@ namespace mp4_parse_test1.Boxes
 				{ BoxType.stbl, typeof(SampleTableBox) },
 				{ BoxType.stsd, typeof(SampleDescriptionBox) },
 				{ BoxType.stts, typeof(TimeToSampleBox) },
-				{ BoxType.stsc, typeof(StscBox) },
+				{ BoxType.stsc, typeof(SampleToChunkBox) },
 				{ BoxType.stsz, typeof(SampleSizeBox) },
 				{ BoxType.stco, typeof(StcoBox) },
 				//{ BoxType.mp4v, typeof(Mp4VisualSampleEntry) },

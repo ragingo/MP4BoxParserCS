@@ -78,6 +78,7 @@
     <Compile Include="Boxes\SampleEntries.cs" />
     <Compile Include="Boxes\SampleSizeBox.cs" />
     <Compile Include="Boxes\SampleTableBox.cs" />
+    <Compile Include="Boxes\SampleToChunkBox.cs" />
     <Compile Include="Boxes\ShadowSyncSampleBox.cs" />
     <Compile Include="Boxes\SoundMediaHeaderBox.cs" />
     <Compile Include="Boxes\SyncSampleBox.cs" />
