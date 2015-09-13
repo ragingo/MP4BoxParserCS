@@ -4,7 +4,7 @@ using System.Text;
 
 namespace mp4_parse_test1
 {
-	class BinaryReader : System.IO.BinaryReader
+	public class BinaryReader : System.IO.BinaryReader
 	{
 		private bool _isBigEndian = false;
 		private readonly bool _isNeedReverse;
