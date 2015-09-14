@@ -62,6 +62,9 @@ namespace mp4_parse_test1
 				case BoxType.ftyp:
 					ParseFtyp(sibling);
 					break;
+				case BoxType.mdat:
+					ParseMdat(sibling);
+					break;
 				case BoxType.mvhd:
 					ParseMvhd(sibling);
 					break;
@@ -137,6 +140,14 @@ namespace mp4_parse_test1
 			{
 				box.CompatibleBrands.Add((Brand)_reader.ReadUInt32());
 			}
+		}
+
+		// Media Data Box
+		private void ParseMdat(Box sibling)
+		{
+			var box = sibling as MediaDataBox;
+			// TODO: これは重たすぎるから改善する
+			box.Data = _reader.ReadBytes((int)box.Size - (4 + 4)); // size + type
 		}
 
 		// Movie Header Box

@@ -34,7 +34,7 @@ namespace mp4_parse_test1
 
 				DumpBoxTree(container.Boxes);
 				//ShowHandlers(container.Boxes);
-				//ShowAudioInfo(container.Boxes);
+				ShowAudioInfo(container.Boxes);
 
 				return;
 			}
@@ -77,29 +77,71 @@ namespace mp4_parse_test1
 					stsc = stsc,
 					stsz = stsz,
 					stco = stco,
+					mp4a = mp4a,
 					// TODO: Audio抽出 よくわからない
 					//Test1 =
-					//	from chunk_entry_index in Enumerable.Range(0, (int)stsc.EntryCount)
-					//	from chunk_index in Enumerable.Range((int)stsc.Entries[chunk_entry_index].FirstChunk, (int)stco.EntryCount)
-					//	from sample_to_chunk_entry_index in Enumerable.Range(0, (int)stsc.EntryCount)
-					//	select stsc.Entries[sample_to_chunk_entry_index].SamplesPerChunk
+					//	from chunk in Enumerable.Range(0, (int)stsc.EntryCount)
+					//	let first = (int)stsc.Entries[chunk].FirstChunk - 1
+					//	let offset = stco.Entries[first].ChunkOffset
+					//	from sample in Enumerable.Range(0, (int)stsc.Entries[chunk].SamplesPerChunk)
+					//	let size = stsz.Entries[chunk + sample].Size
+					//	select new { chunk=first+1, chunk_offset = offset, sample=chunk+sample, sample_size=size }
 				};
+
+
+			// AAC抽出サンプル： http://hujimi.seesaa.net/article/239922100.html
+			var b = audio.First();
+
+			var mdat = boxes.First(x => x is MediaDataBox) as MediaDataBox;
+			byte[] data = mdat.Data.ToArray();
+
+			using (var fs = new FileStream(@"D:\temp\a.aac", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
+			{
+				byte[] aac_header = new byte[7];
+				aac_header[0] = 0xff;
+				aac_header[1] = 0xf9;
+				aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
+				aac_header[6] = 0xfc;
+
+				int total_sample_count = 0;
+
+				for (int chunk_idx = 0; chunk_idx < b.stsc.EntryCount; chunk_idx++)
+				{
+					int first_chunk_idx = (int)b.stsc.Entries[chunk_idx].FirstChunk - 1;
+					int offset = (int)b.stco.Entries[first_chunk_idx].ChunkOffset;
+
+					for (int sample_idx = 0; sample_idx < b.stsc.Entries[chunk_idx].SamplesPerChunk; sample_idx++)
+					{
+						uint size = b.stsz.Entries[total_sample_count].Size;
+						uint file_size = size + 7;
+						aac_header[3] = (byte)((b.mp4a.ChannelCount << 6) | (byte)(file_size >> 11));
+						aac_header[4] = (byte)(file_size >> 3);
+						aac_header[5] = (byte)((file_size << 5) | (0x7ff >> 6));
+
+						fs.Write(aac_header, 0, aac_header.Length);
+						fs.Write(data, offset, (int)size);
+
+						Console.WriteLine(new { chunk = first_chunk_idx + 1, chunk_offset = offset, sample = total_sample_count + 1, sample_size = size });
+						total_sample_count++;
+					}
+				}
+			}
 
 			foreach (var item in audio)
 			{
 				Console.WriteLine(item);
-				foreach (var item2 in item.stts.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				{
-					Console.WriteLine("index: {0:#,0}, count: {1:#,0}, delta: {2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
-				}
-				foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				{
-					Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
-				}
-				foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				{
-					//Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
-				}
+				//foreach (var item2 in item.stts.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				//{
+				//	Console.WriteLine("index: {0:#,0}, count: {1:#,0}, delta: {2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
+				//}
+				//foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				//{
+				//	Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
+				//}
+				//foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				//{
+				//	//Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
+				//}
 			}
 		}
 	}
