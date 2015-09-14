@@ -60,5 +60,10 @@ namespace mp4_parse_test1
 		{
 			return Children.Count > 0;
 		}
+
+		public bool IsLastPosition()
+		{
+			return (Parent.Offset + Parent.Size) == (Offset + Size);
+		}
 	}
 }

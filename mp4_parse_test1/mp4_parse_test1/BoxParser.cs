@@ -103,14 +103,11 @@ namespace mp4_parse_test1
 					break;
 				}
 
-				if (parent != null &&
-					parent.Offset + parent.Size == sibling.Offset + sibling.Size)
+				if (sibling.IsLastPosition())
 				{
 					return;
 				}
 			}
-
-			return;
 		}
 
 		private void ParseBox(Box sibling, uint boxSize)
