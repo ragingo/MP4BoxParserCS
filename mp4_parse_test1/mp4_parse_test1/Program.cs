@@ -7,6 +7,27 @@ using mp4_parse_test1.Boxes;
 
 namespace mp4_parse_test1
 {
+	struct Bit
+	{
+		public static readonly Bit On = new Bit(true);
+		public static readonly Bit Off = new Bit(false);
+		private bool _bit;
+		private Bit(bool bit)
+		{
+			_bit = bit;
+		}
+		public static implicit operator Bit(int a)
+		{
+			return new Bit(a != 0);
+		}
+	}
+	class BitBuilder
+	{
+		public BitBuilder()
+		{
+		}
+
+	}
 	class Program
 	{
 		static void DumpBoxTree(IEnumerable<Box> nodes, int level = 0)
@@ -92,15 +113,21 @@ namespace mp4_parse_test1
 			// AAC抽出サンプル： http://hujimi.seesaa.net/article/239922100.html
 			var b = audio.First();
 
-			var mdat = boxes.First(x => x is MediaDataBox) as MediaDataBox;
-			byte[] data = mdat.Data.ToArray();
+			//var mdat = boxes.First(x => x is MediaDataBox) as MediaDataBox;
+			//byte[] data = mdat.Data.ToArray();
+			string[] fileNames = { @"I:\Development\Data\Video\mp4_h264_aac.mp4", @"D:\data\video\mp4_h264_aac.mp4" };
+			string fileName = fileNames.First(f => File.Exists(f));
+			byte[] data = File.ReadAllBytes(fileName);
 
 			using (var fs = new FileStream(@"D:\temp\a.aac", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
 			{
+				// TODO: http://www.wdic.org/w/TECH/ADTS
+				// TODO: http://www.p23.nl/projects/aac-header/
 				byte[] aac_header = new byte[7];
 				aac_header[0] = 0xff;
-				aac_header[1] = 0xf9;
-				aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
+				aac_header[1] = 0xf8;
+				//aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
+				aac_header[2] = 0x50;
 				aac_header[6] = 0xfc;
 
 				int total_sample_count = 0;
@@ -108,21 +135,33 @@ namespace mp4_parse_test1
 				for (int chunk_idx = 0; chunk_idx < b.stsc.EntryCount; chunk_idx++)
 				{
 					int first_chunk_idx = (int)b.stsc.Entries[chunk_idx].FirstChunk - 1;
-					int offset = (int)b.stco.Entries[first_chunk_idx].ChunkOffset;
+					int chunk_offset = (int)b.stco.Entries[first_chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
+					int sample_offset = 0;
 
 					for (int sample_idx = 0; sample_idx < b.stsc.Entries[chunk_idx].SamplesPerChunk; sample_idx++)
 					{
-						uint size = b.stsz.Entries[total_sample_count].Size;
-						uint file_size = size + 7;
+						uint sample_size = b.stsz.Entries[total_sample_count].Size;
+						uint file_size = sample_size + 7;
 						aac_header[3] = (byte)((b.mp4a.ChannelCount << 6) | (byte)(file_size >> 11));
 						aac_header[4] = (byte)(file_size >> 3);
 						aac_header[5] = (byte)((file_size << 5) | (0x7ff >> 6));
 
 						fs.Write(aac_header, 0, aac_header.Length);
-						fs.Write(data, offset, (int)size);
+						fs.Write(data, chunk_offset + sample_offset, (int)sample_size);
 
-						Console.WriteLine(new { chunk = first_chunk_idx + 1, chunk_offset = offset, sample = total_sample_count + 1, sample_size = size });
+						var result = new { 
+							chunk = first_chunk_idx + 1,
+							chunk_offset = chunk_offset,
+							sample = total_sample_count + 1,
+							sample_size = sample_size,
+							aac_header = "0x"+string.Join("",aac_header.Select(x=>x.ToString("X2"))),
+							sample_offset
+						};
+						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}", 
+							result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset);
+
 						total_sample_count++;
+						sample_offset += (int)sample_size;
 					}
 				}
 			}
