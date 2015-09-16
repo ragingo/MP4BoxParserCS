@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using mp4_parse_test1.Boxes;
+using System.Reflection;
 
 namespace mp4_parse_test1
 {
@@ -57,8 +58,28 @@ namespace mp4_parse_test1
 			return (byte)_bits.Take(8).Select((b, i) => new { b, i }).Select(x => (int)Math.Pow(2, 8 - x.i) * (int)x.b).Aggregate((x,y)=>x|y);
 		}
 	}
+
 	class Program
 	{
+		private static readonly Tuple<byte, int>[] SamplingFrequencies = new [] {
+			new Tuple<byte, int>(0x00, 96000),
+			new Tuple<byte, int>(0x01, 88200),
+			new Tuple<byte, int>(0x02, 64000),
+			new Tuple<byte, int>(0x03, 48000),
+			new Tuple<byte, int>(0x04, 44100),
+			new Tuple<byte, int>(0x05, 32000),
+			new Tuple<byte, int>(0x06, 24000),
+			new Tuple<byte, int>(0x07, 22050),
+			new Tuple<byte, int>(0x08, 16000),
+			new Tuple<byte, int>(0x09, 12000),
+			new Tuple<byte, int>(0x0a, 11025),
+			new Tuple<byte, int>(0x0b,  8000),
+			new Tuple<byte, int>(0x0c,  7350),
+			new Tuple<byte, int>(0x0d,     0),
+			new Tuple<byte, int>(0x0e,     0),
+			new Tuple<byte, int>(0x0f,     0),
+		};
+
 		static void DumpBoxTree(IEnumerable<Box> nodes, int level = 0)
 		{
 			foreach (var node in nodes)
@@ -75,8 +96,7 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			string[] fileNames = { @"I:\Development\Data\Video\mp4_h264_aac.mp4", @"D:\data\video\mp4_h264_aac.mp4" };
-			string fileName = fileNames.First(f => File.Exists(f));
+			string fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Test\Data\sm23127869.mp4";
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
@@ -154,7 +174,7 @@ namespace mp4_parse_test1
 		private static void ExtractAudio(IEnumerable<Box> boxes)
 		{
 			var audio =
-				from box1 in boxes.First(box => box is MovieBox).Children
+				(from box1 in boxes.First(box => box is MovieBox).Children
 				where box1.Type == BoxType.trak
 				let mdia = box1.GetChild<MediaBox>()
 				let hdlr = mdia.GetChild<HandlerBox>()
@@ -178,39 +198,41 @@ namespace mp4_parse_test1
 					stsz = stsz,
 					stco = stco,
 					mp4a = mp4a,
-				};
-
-
-			// AAC抽出サンプル： http://hujimi.seesaa.net/article/239922100.html
-			var b = audio.First();
+				}).First();
 
 			//var mdat = boxes.First(x => x is MediaDataBox) as MediaDataBox;
 			//byte[] data = mdat.Data.ToArray();
-			string[] fileNames = { @"I:\Development\Data\Video\mp4_h264_aac.mp4", @"D:\data\video\mp4_h264_aac.mp4" };
-			string fileName = fileNames.First(f => File.Exists(f));
+			// TODO: ファイル全体を読み込まないよう修正する
+			string fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Test\Data\sm23127869.mp4";
 			byte[] data = File.ReadAllBytes(fileName);
 
 			using (var fs = new FileStream(@"D:\temp\a.aac", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
 			{
 				// TODO: http://www.wdic.org/w/TECH/ADTS
 				// TODO: http://www.p23.nl/projects/aac-header/
+
+				byte freq = SamplingFrequencies.FirstOrDefault(x => x.Item2 == audio.mp4a.SampleRate).Item1;
+
 				byte[] aac_header = new byte[7];
-				aac_header[0] = 0xff;
-				aac_header[1] = 0xf9;
-				aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
-				aac_header[6] = 0xfc;
+				aac_header[0] = 0xff; // 11111111
+				aac_header[1] = 0xf9; // 1111 1 00 1
+				aac_header[2] = (byte)(0x40 | (freq << 2) | (audio.mp4a.ChannelCount >> 2)); // 01 XXXX 0 X
+				aac_header[6] = 0xfc; // XXXXXX 00
 
 				int total_sample_count = 0;
 
-				// stsc から stco を引くと、stsc に無い chunk があり stco のチャンクが使われない。stco のチャンク内サンプル数は偶然なのか、直前のサンプル数と同じだった
+				// TODO: 
+				// stsc には無い chunk が stco に有る。
+				// stco の chunk が stsc に無かったら 直前のサンプル数を使用する。
+				// 今のところはこれで問題無かったけど、正しいかは要確認。
 
 				int lastSampleCount = 0;
 
-				for (int chunk_idx = 0; chunk_idx < b.stco.EntryCount; chunk_idx++)
+				for (int chunk_idx = 0; chunk_idx < audio.stco.EntryCount; chunk_idx++)
 				{
 					int chunk_id = chunk_idx + 1;
-					int chunk_offset = (int)b.stco.Entries[chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
-					var chunk = b.stsc.Entries.FirstOrDefault(x => x.FirstChunk == chunk_id);
+					int chunk_offset = (int)audio.stco.Entries[chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
+					var chunk = audio.stsc.Entries.FirstOrDefault(x => x.FirstChunk == chunk_id);
 
 					int sample_count = chunk == null ? lastSampleCount : (int)chunk.SamplesPerChunk;
 					lastSampleCount = sample_count;
@@ -218,11 +240,11 @@ namespace mp4_parse_test1
 
 					for (int sample_idx = 0; sample_idx < sample_count; sample_idx++)
 					{
-						uint sample_size = b.stsz.Entries[total_sample_count].Size;
-						uint file_size = sample_size + 7;
-						aac_header[3] = (byte)((b.mp4a.ChannelCount << 6) | (byte)(file_size >> 11)); // 10 0 0 0 0 
-						aac_header[4] = (byte)(file_size >> 3);
-						aac_header[5] = (byte)((file_size << 5) | (0x7ff >> 6));
+						int sample_size = (int)audio.stsz.Entries[total_sample_count].Size;
+						int frame_size = sample_size + 7;
+						aac_header[3] = (byte)((audio.mp4a.ChannelCount << 6) | (frame_size >> 14)); // XX 0 0 0 0 XX
+						aac_header[4] = (byte)(frame_size >> 3); // XXXXXXXX
+						aac_header[5] = (byte)((frame_size << 5) | (0x7ff >> 6)); // XXX XXXXX
 
 						fs.Write(aac_header, 0, aac_header.Length);
 						fs.Write(data, chunk_offset + sample_offset, (int)sample_size);
@@ -236,13 +258,15 @@ namespace mp4_parse_test1
 							aac_header = "0x" + string.Join("", aac_header.Select(x => x.ToString("X2"))),
 							sample_offset
 						};
-						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}",
-							result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset);
+						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}, sample_count = {6, 6}",
+							result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset, lastSampleCount);
 
 						total_sample_count++;
 						sample_offset += (int)sample_size;
 					}
 				}
+
+				Console.WriteLine("{0:#,0} samples", total_sample_count);
 			}
 		}
 	}
