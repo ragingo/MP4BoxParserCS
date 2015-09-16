@@ -84,7 +84,8 @@ namespace mp4_parse_test1
 
 				DumpBoxTree(container.Boxes);
 				//ShowHandlers(container.Boxes);
-				ShowAudioInfo(container.Boxes);
+				//ShowAudioInfo(container.Boxes);
+				ExtractAudio(container.Boxes);
 
 				return;
 			}
@@ -132,6 +133,53 @@ namespace mp4_parse_test1
 					mp4a = mp4a,
 				};
 
+			foreach (var item in audio)
+			{
+				Console.WriteLine(item);
+				foreach (var item2 in item.stts.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				{
+					Console.WriteLine("index: {0:#,0}, count: {1:#,0}, delta: {2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
+				}
+				foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				{
+					Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
+				}
+				foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
+				{
+					//Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
+				}
+			}
+		}
+
+		private static void ExtractAudio(IEnumerable<Box> boxes)
+		{
+			var audio =
+				from box1 in boxes.First(box => box is MovieBox).Children
+				where box1.Type == BoxType.trak
+				let mdia = box1.GetChild<MediaBox>()
+				let hdlr = mdia.GetChild<HandlerBox>()
+				where hdlr.HandlerType == HandlerType.Sound
+
+				let minf = mdia.GetChild<MediaInformationBox>()
+				let stbl = minf.GetChild<SampleTableBox>()
+				let stsd = stbl.GetChild<SampleDescriptionBox>()
+				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
+				let esds = mp4a.GetChild<EsdBox>()
+				let stts = stbl.GetChild<TimeToSampleBox>()
+				let stsc = stbl.GetChild<SampleToChunkBox>()
+				let stsz = stbl.GetChild<SampleSizeBox>()
+				let stco = stbl.GetChild<ChunkOffsetBox>()
+
+				select new
+				{
+					esds = esds,
+					stts = stts,
+					stsc = stsc,
+					stsz = stsz,
+					stco = stco,
+					mp4a = mp4a,
+				};
+
 
 			// AAC抽出サンプル： http://hujimi.seesaa.net/article/239922100.html
 			var b = audio.First();
@@ -163,8 +211,8 @@ namespace mp4_parse_test1
 					int chunk_id = chunk_idx + 1;
 					int chunk_offset = (int)b.stco.Entries[chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
 					var chunk = b.stsc.Entries.FirstOrDefault(x => x.FirstChunk == chunk_id);
-		
-					int sample_count = chunk==null?lastSampleCount:(int)chunk.SamplesPerChunk;
+
+					int sample_count = chunk == null ? lastSampleCount : (int)chunk.SamplesPerChunk;
 					lastSampleCount = sample_count;
 					int sample_offset = 0;
 
@@ -195,23 +243,6 @@ namespace mp4_parse_test1
 						sample_offset += (int)sample_size;
 					}
 				}
-			}
-
-			foreach (var item in audio)
-			{
-				Console.WriteLine(item);
-				//foreach (var item2 in item.stts.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				//{
-				//	Console.WriteLine("index: {0:#,0}, count: {1:#,0}, delta: {2:#,0}", item2.Index, item2.Entry.SampleCount, item2.Entry.SampleDelta);
-				//}
-				//foreach (var item2 in item.stsc.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				//{
-				//	Console.WriteLine("index: {0:#,0}, first_chunk: {1:#,0}, sample_per_chunk: {2:#,0}, desc_index: {3:#,0}", item2.Index, item2.Entry.FirstChunk, item2.Entry.SamplesPerChunk, item2.Entry.SampleDescriptionIndex);
-				//}
-				//foreach (var item2 in item.stsz.Entries.Select((x, i) => new { Index = i + 1, Entry = x }))
-				//{
-				//	//Console.WriteLine("index: {0:#,0}, size: {1:#,0}", item2.Index, item2.Entry.Size);
-				//}
 			}
 		}
 	}
