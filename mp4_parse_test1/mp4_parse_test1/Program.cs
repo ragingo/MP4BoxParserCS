@@ -20,13 +20,42 @@ namespace mp4_parse_test1
 		{
 			return new Bit(a != 0);
 		}
+		public static implicit operator int(Bit a)
+		{
+			return a._bit ? 1 : 0;
+		}
+		public override string ToString()
+		{
+			return _bit ? "1" : "0";
+		}
+
+		public static readonly uint[] Masks = new uint[] {
+			0x00000001, 0x00000003, 0x00000007, 0x0000000f,
+			0x0000001f, 0x0000003f, 0x0000007f, 0x000000ff,
+			0x000001ff, 0x000003ff, 0x000007ff, 0x00000fff,
+			0x00001fff, 0x00003fff, 0x00007fff, 0x0000ffff,
+			0x0001ffff, 0x0003ffff, 0x0007ffff, 0x000fffff,
+			0x000fffff, 0x003fffff, 0x007fffff, 0x00ffffff,
+			0x01ffffff, 0x03ffffff, 0x07ffffff, 0x0fffffff,
+			0x1fffffff, 0x3fffffff, 0x7fffffff, 0xffffffff,
+		};
 	}
 	class BitBuilder
 	{
-		public BitBuilder()
+		private IEnumerable<Bit> _bits;
+		public BitBuilder(IEnumerable<Bit> bits)
 		{
+			_bits = bits;
 		}
 
+		public byte ToByte()
+		{
+			if (_bits.Count() < 8)
+			{
+				throw new Exception();
+			}
+			return (byte)_bits.Take(8).Select((b, i) => new { b, i }).Select(x => (int)Math.Pow(2, 8 - x.i) * (int)x.b).Aggregate((x,y)=>x|y);
+		}
 	}
 	class Program
 	{
@@ -59,6 +88,8 @@ namespace mp4_parse_test1
 
 				return;
 			}
+
+			//Console.WriteLine(new BitBuilder(new Bit[]{1,2,3,4,5,6,7,8,9,0}).ToByte().ToString("X")); // TODO: バグで FE になってる
 		}
 
 		private static void ShowHandlers(IEnumerable<Box> boxes)
@@ -99,14 +130,6 @@ namespace mp4_parse_test1
 					stsz = stsz,
 					stco = stco,
 					mp4a = mp4a,
-					// TODO: Audio抽出 よくわからない
-					//Test1 =
-					//	from chunk in Enumerable.Range(0, (int)stsc.EntryCount)
-					//	let first = (int)stsc.Entries[chunk].FirstChunk - 1
-					//	let offset = stco.Entries[first].ChunkOffset
-					//	from sample in Enumerable.Range(0, (int)stsc.Entries[chunk].SamplesPerChunk)
-					//	let size = stsz.Entries[chunk + sample].Size
-					//	select new { chunk=first+1, chunk_offset = offset, sample=chunk+sample, sample_size=size }
 				};
 
 
@@ -125,39 +148,47 @@ namespace mp4_parse_test1
 				// TODO: http://www.p23.nl/projects/aac-header/
 				byte[] aac_header = new byte[7];
 				aac_header[0] = 0xff;
-				aac_header[1] = 0xf8;
-				//aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
-				aac_header[2] = 0x50;
+				aac_header[1] = 0xf9;
+				aac_header[2] = (byte)(0x40 | ((byte)b.mp4a.SampleRate << 2) | (b.mp4a.ChannelCount >> 2));
 				aac_header[6] = 0xfc;
 
 				int total_sample_count = 0;
 
-				for (int chunk_idx = 0; chunk_idx < b.stsc.EntryCount; chunk_idx++)
+				// stsc から stco を引くと、stsc に無い chunk があり stco のチャンクが使われない。stco のチャンク内サンプル数は偶然なのか、直前のサンプル数と同じだった
+
+				int lastSampleCount = 0;
+
+				for (int chunk_idx = 0; chunk_idx < b.stco.EntryCount; chunk_idx++)
 				{
-					int first_chunk_idx = (int)b.stsc.Entries[chunk_idx].FirstChunk - 1;
-					int chunk_offset = (int)b.stco.Entries[first_chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
+					int chunk_id = chunk_idx + 1;
+					int chunk_offset = (int)b.stco.Entries[chunk_idx].ChunkOffset; // mp4ファイル内オフセット！mdat BOX 内オフセットじゃない！！
+					var chunk = b.stsc.Entries.FirstOrDefault(x => x.FirstChunk == chunk_id);
+		
+					int sample_count = chunk==null?lastSampleCount:(int)chunk.SamplesPerChunk;
+					lastSampleCount = sample_count;
 					int sample_offset = 0;
 
-					for (int sample_idx = 0; sample_idx < b.stsc.Entries[chunk_idx].SamplesPerChunk; sample_idx++)
+					for (int sample_idx = 0; sample_idx < sample_count; sample_idx++)
 					{
 						uint sample_size = b.stsz.Entries[total_sample_count].Size;
 						uint file_size = sample_size + 7;
-						aac_header[3] = (byte)((b.mp4a.ChannelCount << 6) | (byte)(file_size >> 11));
+						aac_header[3] = (byte)((b.mp4a.ChannelCount << 6) | (byte)(file_size >> 11)); // 10 0 0 0 0 
 						aac_header[4] = (byte)(file_size >> 3);
 						aac_header[5] = (byte)((file_size << 5) | (0x7ff >> 6));
 
 						fs.Write(aac_header, 0, aac_header.Length);
 						fs.Write(data, chunk_offset + sample_offset, (int)sample_size);
 
-						var result = new { 
-							chunk = first_chunk_idx + 1,
+						var result = new
+						{
+							chunk = chunk_id,
 							chunk_offset = chunk_offset,
 							sample = total_sample_count + 1,
 							sample_size = sample_size,
-							aac_header = "0x"+string.Join("",aac_header.Select(x=>x.ToString("X2"))),
+							aac_header = "0x" + string.Join("", aac_header.Select(x => x.ToString("X2"))),
 							sample_offset
 						};
-						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}", 
+						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}",
 							result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset);
 
 						total_sample_count++;

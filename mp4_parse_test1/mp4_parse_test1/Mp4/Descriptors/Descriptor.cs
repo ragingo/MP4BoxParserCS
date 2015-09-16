@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mp4_parse_test1
+namespace mp4_parse_test1.Descriptors
 {
 	// ISO/IEC 14496-1:2010(E) 7.2.2.1 Table 1 — List of Class Tags for Descriptors
 	public enum DescriptorTag : byte
