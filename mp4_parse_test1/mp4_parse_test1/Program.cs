@@ -99,13 +99,14 @@ namespace mp4_parse_test1
 			string fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Test\Data\sm23127869.mp4";
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+			using (var br = new BinaryReader(fs, true))
 			{
-				var container = Mp4Container.Parse(fs);
+				var container = Mp4Container.Parse(br);
 
 				DumpBoxTree(container.Boxes);
 				//ShowHandlers(container.Boxes);
 				//ShowAudioInfo(container.Boxes);
-				ExtractAudio(container.Boxes);
+				ExtractAudio(container.Boxes, fs);
 
 				return;
 			}
@@ -171,7 +172,7 @@ namespace mp4_parse_test1
 			}
 		}
 
-		private static void ExtractAudio(IEnumerable<Box> boxes)
+		private static void ExtractAudio(IEnumerable<Box> boxes, Stream stream)
 		{
 			var audio =
 				(from box1 in boxes.First(box => box is MovieBox).Children
@@ -184,27 +185,17 @@ namespace mp4_parse_test1
 				let stbl = minf.GetChild<SampleTableBox>()
 				let stsd = stbl.GetChild<SampleDescriptionBox>()
 				let mp4a = stsd.GetChild<Mp4AudioSampleEntry>()
-				let esds = mp4a.GetChild<EsdBox>()
-				let stts = stbl.GetChild<TimeToSampleBox>()
 				let stsc = stbl.GetChild<SampleToChunkBox>()
 				let stsz = stbl.GetChild<SampleSizeBox>()
 				let stco = stbl.GetChild<ChunkOffsetBox>()
 
 				select new
 				{
-					esds = esds,
-					stts = stts,
 					stsc = stsc,
 					stsz = stsz,
 					stco = stco,
 					mp4a = mp4a,
 				}).First();
-
-			//var mdat = boxes.First(x => x is MediaDataBox) as MediaDataBox;
-			//byte[] data = mdat.Data.ToArray();
-			// TODO: ファイル全体を読み込まないよう修正する
-			string fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Test\Data\sm23127869.mp4";
-			byte[] data = File.ReadAllBytes(fileName);
 
 			using (var fs = new FileStream(@"D:\temp\a.aac", FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite))
 			{
@@ -247,27 +238,37 @@ namespace mp4_parse_test1
 						aac_header[5] = (byte)((frame_size << 5) | (0x7ff >> 6)); // XXX XXXXX
 
 						fs.Write(aac_header, 0, aac_header.Length);
-						fs.Write(data, chunk_offset + sample_offset, (int)sample_size);
 
-						var result = new
-						{
-							chunk = chunk_id,
-							chunk_offset = chunk_offset,
-							sample = total_sample_count + 1,
-							sample_size = sample_size,
-							aac_header = "0x" + string.Join("", aac_header.Select(x => x.ToString("X2"))),
-							sample_offset
-						};
-						Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}, sample_count = {6, 6}",
-							result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset, lastSampleCount);
+						stream.Seek(chunk_offset + sample_offset, SeekOrigin.Begin);
+						byte[] bytes = new byte[sample_size];
+						stream.Read(bytes, 0, sample_size);
+
+						fs.Write(bytes, 0, sample_size);
+
+						//ShowExtractInfo(aac_header, total_sample_count, lastSampleCount, chunk_id, chunk_offset, sample_offset, sample_size);
 
 						total_sample_count++;
-						sample_offset += (int)sample_size;
+						sample_offset += sample_size;
 					}
 				}
 
 				Console.WriteLine("{0:#,0} samples", total_sample_count);
 			}
+		}
+
+		private static void ShowExtractInfo(byte[] aac_header, int total_sample_count, int lastSampleCount, int chunk_id, int chunk_offset, int sample_offset, int sample_size)
+		{
+			var result = new
+			{
+				chunk = chunk_id,
+				chunk_offset = chunk_offset,
+				sample = total_sample_count + 1,
+				sample_size = sample_size,
+				aac_header = "0x" + string.Join("", aac_header.Select(x => x.ToString("X2"))),
+				sample_offset
+			};
+			Console.WriteLine("chunk = {0,5}, chunk_offset = {1,7}, sample = {2,4}, sample_size = {3,4}, aac_header = {4,16}, sample_offset = {5, 4}, sample_count = {6, 6}",
+				result.chunk, result.chunk_offset, result.sample, result.sample_size, result.aac_header, result.sample_offset, lastSampleCount);
 		}
 	}
 }

@@ -16,15 +16,11 @@ namespace mp4_parse_test1
 			Boxes = new List<Box>();
 		}
 
-		public static Mp4Container Parse(FileStream stream)
+		public static Mp4Container Parse(BinaryReader reader)
 		{
 			Mp4Container container = new Mp4Container();
 
-			using (var br = new BinaryReader(stream, true))
-			{
-				new BoxParser(br, container).Parse();
-				//container.Boxes.AddRange(new BoxParser(br, container).Parse());
-			}
+			new BoxParser(reader, container).Parse();
 
 			return container;
 		}
