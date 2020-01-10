@@ -96,7 +96,16 @@ namespace mp4_parse_test1
 
 		static void Main(string[] args)
 		{
-			string fileName = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Test\Data\sm23127869.mp4";
+			if (args.Length == 0)
+			{
+				return;
+			}
+
+			string fileName = args[0];
+			if (!File.Exists(fileName))
+			{
+				return;
+			}
 
 			using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			using (var br = new BinaryReader(fs, true))

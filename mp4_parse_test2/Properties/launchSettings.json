@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "mp4_parse_test2": {
+      "commandName": "Project",
+      "commandLineArgs": "./sample.mp4"
+    }
+  }
+}

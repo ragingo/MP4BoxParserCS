@@ -1,0 +1,8 @@
+# dirs
+/.vs
+/**/bin
+/**/obj
+
+# files
+.suo
+/**/*.user

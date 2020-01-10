@@ -1,12 +1,9 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Threading.Tasks;
-
-// 
-// .NET Core 3.1 版
-// コンパイルエラーが出て動かない！ (mac dotnet --version -> 3.1.100)
-// 
 
 namespace mp4_parse_test2
 {
@@ -44,8 +41,7 @@ namespace mp4_parse_test2
             while (true)
             {
                 var memory = writer.GetMemory(1024);
-                // Program.cs(42,50): error CS1503: 引数 1: は 'System.Memory<byte>' から 'byte[]' へ変換することはできません。
-                int len = await stream.ReadAsync(memory, (int)stream.Position, 1024);
+                int len = await stream.ReadAsync(memory);
                 if (len == 0)
                 {
                     break;
@@ -58,8 +54,6 @@ namespace mp4_parse_test2
                 {
                     break;
                 }
-
-                break;
             }
 
             await writer.CompleteAsync();
@@ -70,14 +64,19 @@ namespace mp4_parse_test2
             while (true)
             {
                 var result = await reader.ReadAsync();
-                var buffer = result.Buffer;
-
-                Console.WriteLine(buffer.Slice(0, 4));
-
                 if (result.IsCompleted)
                 {
                     break;
                 }
+
+                var buffer = result.Buffer;
+                if (!buffer.IsEmpty)
+                {
+                    // TODO: ...
+                    //Console.WriteLine(string.Join(" ", buffer.Slice(0, 4).ToArray().Select(x => x.ToString("x2"))));
+                }
+
+                reader.AdvanceTo(result.Buffer.End);
             }
 
             await reader.CompleteAsync();
