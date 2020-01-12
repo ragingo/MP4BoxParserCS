@@ -11,6 +11,8 @@ namespace mp4_parse_test2.Mp4
         private long _totalReceivedLength;
         private Box _currentBox;
 
+        public event Action<Box> BoxLoaded;
+
         public void ParsePartialData(ReadOnlySequence<byte> seq)
         {
             _totalReceivedLength += seq.Length;
@@ -31,7 +33,8 @@ namespace mp4_parse_test2.Mp4
 
                 _currentBox = new Box(span);
                 _bufferOffset += _currentBox.Size;
-                Console.WriteLine(_currentBox);
+
+                BoxLoaded?.Invoke(_currentBox);
 
                 switch (_currentBox.Type)
                 {

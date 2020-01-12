@@ -11,3 +11,6 @@ dotnet_style_require_accessibility_modifiers = for_non_interface_members:none
 
 # CA1028: 列挙ストレージは Int32 でなければなりません
 dotnet_diagnostic.CA1028.severity = none
+
+# CA1812: インスタンス化されていない内部クラスを使用しません
+dotnet_diagnostic.CA1812.severity = none
