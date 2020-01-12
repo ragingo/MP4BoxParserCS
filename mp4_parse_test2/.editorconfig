@@ -5,3 +5,9 @@ dotnet_diagnostic.CA1305.severity = none
 
 # CA1707: 識別子はアンダースコアを含むことはできません
 dotnet_diagnostic.CA1707.severity = none
+
+# IDE0040: アクセシビリティ修飾子を追加します
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:none
+
+# CA1028: 列挙ストレージは Int32 でなければなりません
+dotnet_diagnostic.CA1028.severity = none
