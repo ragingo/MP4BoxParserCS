@@ -25,13 +25,11 @@ namespace mp4_parse_test2
 
         private static async Task ParseFileAsync(string fileName)
         {
-            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                var pipe = new Pipe();
-                var w = WritePipeAsync(pipe.Writer, fs);
-                var r = ReadPipeAsync(pipe.Reader);
-                await Task.WhenAll(w, r).ConfigureAwait(false);
-            }
+            using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var pipe = new Pipe();
+            var w = WritePipeAsync(pipe.Writer, fs);
+            var r = ReadPipeAsync(pipe.Reader);
+            await Task.WhenAll(w, r).ConfigureAwait(false);
         }
 
         private static async Task WritePipeAsync(PipeWriter writer, Stream stream)
