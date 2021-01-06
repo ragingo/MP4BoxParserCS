@@ -9,11 +9,11 @@ namespace mp4_parse_test1.Descriptors
 	public class QoS_Descriptor : BaseDescriptor
 	{
 		public byte PreDefined { get; set; }
-		public QoS_Qualifier[] qualifiers;
+		public QoS_Qualifier[] Qualifiers;
 		public QoS_Descriptor()
 		{
 			Tag = DescriptorTag.QoS_DescrTag;
-			qualifiers = new QoS_Qualifier[8];
+			Qualifiers = new QoS_Qualifier[8];
 		}
 	}
 
