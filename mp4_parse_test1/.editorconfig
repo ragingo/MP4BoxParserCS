@@ -1,19 +1,1 @@
 ﻿[*.cs]
-
-# CA1707: 識別子はアンダースコアを含むことはできません
-dotnet_diagnostic.CA1707.severity = silent
-
-# CA1028: 列挙ストレージは Int32 でなければなりません
-dotnet_diagnostic.CA1028.severity = silent
-
-# CA1305: IFormatProvider を指定します
-dotnet_diagnostic.CA1305.severity = silent
-
-# CA1303: ローカライズされるパラメーターとしてリテラルを渡さない
-dotnet_diagnostic.CA1303.severity = silent
-
-# CA1034: 入れ子にされた型を参照可能にすることはできません
-dotnet_diagnostic.CA1034.severity = silent
-
-# Default severity for analyzer diagnostics with category 'Performance'
-dotnet_analyzer_diagnostic.category-Performance.severity = silent
